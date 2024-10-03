@@ -1,0 +1,20 @@
+const mongoose = require("mongoose");
+
+const KanjiSchema = new mongoose.Schema({
+    id: { type: Number, required: true },
+    text: { type: String, required: true },
+    phonetic: [{ type: String }],
+    onyomi: [{ type: String }],
+    kunyomi: [{ type: String }],
+    strokes: { type: Number },
+    jlpt_level: { type: Number },
+    composition: [{ type: mongoose.Schema.Types.ObjectId, ref: 'compositions' }],
+    meaning: { type: String }
+}, {
+    collection: 'kanji'
+});
+
+const Kanji = mongoose.model("kanji", KanjiSchema);
+
+
+export default Kanji;
