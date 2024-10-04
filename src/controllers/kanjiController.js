@@ -10,6 +10,44 @@ export const getAllKanjis = async (req, res) => {
     }
 };
 
+export const getKanjiList = async (req, res) => {
+    try {
+        const results = await Kanji.find({}, { text: 1, phonetic: 1 });
+
+        const formattedResults = results.map(kanji => ({
+            text: kanji.text,
+            phonetic: kanji.phonetic[0]
+        }));
+        return res.json(formattedResults);
+    } catch (error) {
+        return res.status(500).json({ message: 'Server error', error: error.message });
+    }
+}
+
+export const getKanjiByJLPTLevel = async (req, res) => {
+    const { level } = req.params;
+    if (!level || isNaN(level) || level < 1 || level > 5) {
+        return res.status(400).json({ message: 'Please provide a valid JLPT level (1-5)' });
+    }
+
+    try {
+
+        const results = await Kanji.find({ jlpt_level: level }, { text: 1, phonetic: 1 });
+        const formattedResults = results.map(kanji => ({
+            text: kanji.text,
+            phonetic: kanji.phonetic[0]
+        }));
+
+        if (formattedResults.length > 0) {
+            return res.json(formattedResults);
+        } else {
+            return res.status(404).json({ message: 'No Kanji found for the specified JLPT level' });
+        }
+    } catch (error) {
+        return res.status(500).json({ message: 'Server error', error: error.message });
+    }
+};
+
 export const getKanjiByText = async (req, res) => {
     const { text } = req.params;
 
