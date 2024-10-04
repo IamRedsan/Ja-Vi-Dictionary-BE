@@ -9,3 +9,31 @@ export const getAllKanjis = async (req, res) => {
         res.status(500).send(error);
     }
 };
+
+export const searchKanji = async (req, res) => {
+    const { text } = req.query;
+
+    if (!text || text.trim() === '') {
+        return res.status(400).json({ message: 'Please provide a valid search term' });
+    }
+
+    try {
+        const query = {
+            $or: [
+                { text: { $regex: `^${text}`, $options: 'i' } },     
+                { onyomi: { $regex: `^${text}`, $options: 'i' } },  
+                { kunyomi: { $regex: `^${text}`, $options: 'i' } },  
+            ]
+        };
+
+        const results = await Kanji.find(query);
+
+        if (results.length > 0) {
+            return res.json(results);
+        } else {
+            return res.status(404).json({ message: 'No kanji found matching your search' });
+        }
+    } catch (error) {
+        return res.status(500).json({ message: 'Server error', error: error.message });
+    }
+};
