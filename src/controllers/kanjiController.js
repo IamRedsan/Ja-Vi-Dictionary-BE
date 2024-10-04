@@ -10,6 +10,25 @@ export const getAllKanjis = async (req, res) => {
     }
 };
 
+export const getKanjiByText = async (req, res) => {
+    const { text } = req.params;
+
+    if (!text || text.trim() === '') {
+        return res.status(400).json({ message: 'Please provide a valid Kanji character' });
+    }
+
+    try {
+        const result = await Kanji.findOne({ text });
+        if (result) {
+            return res.json(result);
+        } else {
+            return res.status(404).json({ message: 'Kanji not found' });
+        }
+    } catch (error) {
+        return res.status(500).json({ message: 'Server error', error: error.message });
+    }
+};
+
 export const searchKanji = async (req, res) => {
     const { text } = req.query;
 
@@ -20,9 +39,9 @@ export const searchKanji = async (req, res) => {
     try {
         const query = {
             $or: [
-                { text: { $regex: `^${text}`, $options: 'i' } },     
-                { onyomi: { $regex: `^${text}`, $options: 'i' } },  
-                { kunyomi: { $regex: `^${text}`, $options: 'i' } },  
+                { text: { $regex: `^${text}`, $options: 'i' } },
+                { onyomi: { $regex: `^${text}`, $options: 'i' } },
+                { kunyomi: { $regex: `^${text}`, $options: 'i' } },
             ]
         };
 
