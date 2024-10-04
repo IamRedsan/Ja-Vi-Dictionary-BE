@@ -1,4 +1,5 @@
-const mongoose = require("mongoose");
+import mongoose from "mongoose";
+import composition from "./Composition.js"
 
 const KanjiSchema = new mongoose.Schema({
     id: { type: Number, required: true },

@@ -1,10 +1,10 @@
-const mongoose = require("mongoose");
+import mongoose from "mongoose";
 
-const CompositionSchema = new mongoose.Schema({                    
-    raw_text: String,                
-    phonetic: String,               
+const CompositionSchema = new mongoose.Schema({
+    raw_text: String,
+    phonetic: String,
 }, {
-    collection: 'compositions'         
+    collection: 'compositions'
 });
 
 const Composition = mongoose.model("compositions", CompositionSchema);

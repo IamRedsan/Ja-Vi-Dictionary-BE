@@ -1,4 +1,4 @@
-const mongoose = require("mongoose");
+import mongoose from "mongoose";
 
 const exampleSchema = new mongoose.Schema({
     text: { type: String },
@@ -17,8 +17,10 @@ const WordSchema = new mongoose.Schema({
     meaning: { type: [meaningSchema], required: true },
     examples: { type: [exampleSchema] },
     kanji: { type: [String] }
+}, {
+    collection: 'word'
 });
 
 const Word = mongoose.model('word', WordSchema);
 
-module.exports = Word;
+export default Word;

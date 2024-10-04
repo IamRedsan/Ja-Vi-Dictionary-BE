@@ -1,11 +1,29 @@
-const express = require("express");
+import express from "express";
+import compositionRouter from "./routes/compositionRoutes.js"
+import kanjiRouter from "./routes/kanjiRoutes.js";
+import wordRouter from "./routes/wordRoutes.js"
 
 const app = express();
+app.use(express.json());
 
-app.get("/", (req, res) => {
-    res.send("Hello world123!");
-});
+// router
+app.use("/api/v1/compositions", compositionRouter);
+app.use("/api/v1/kanjis", kanjiRouter);
+app.use("/api/v1/words", wordRouter);
 
-app.listen(3000, () => {
-    console.log("Running on port 3000!");
-});
+//Connect Database
+import connectDB from "./database/connect.js";
+
+const start = async () => {
+    try {
+        const port = 5000;
+        await connectDB(String(process.env.MONGO_URL));
+        app.listen(port, () => {
+            console.log('Listening ' + port);
+        });
+    } catch (error) {
+        console.log(error);
+    }
+};
+
+start();
