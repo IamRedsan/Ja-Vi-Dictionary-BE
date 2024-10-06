@@ -140,18 +140,56 @@ export const searchKanji = async (req, res) => {
     }
 
     try {
-        const query = {
+        // Tạo truy vấn cho tiền tố
+        const prefixQuery = {
             $or: [
                 { text: { $regex: `^${text}`, $options: 'i' } },
+                { romanji: { $regex: `^${text}`, $options: 'i' } },
                 { onyomi: { $regex: `^${text}`, $options: 'i' } },
                 { kunyomi: { $regex: `^${text}`, $options: 'i' } },
+                {
+                    kunyomi: {
+                        $elemMatch: {
+                            $regex: `^-?${text}`,
+                            $options: 'i'
+                        }
+                    }
+                }
             ]
         };
 
-        const results = await Kanji.find(query);
+        const prefixResults = await Kanji.find(prefixQuery).limit(10); // Giới hạn kết quả tìm kiếm là 10
 
-        if (results.length > 0) {
-            return res.json(results);
+        if (prefixResults.length >= 10) {
+            return res.json(prefixResults); // Trả về kết quả nếu đủ 10
+        }
+
+        // Nếu không đủ 10 kết quả, tạo truy vấn cho hậu tố
+        const suffixQuery = {
+            $or: [
+                { text: { $regex: `${text}$`, $options: 'i' } },
+                { romanji: { $regex: `${text}$`, $options: 'i' } },
+                { onyomi: { $regex: `${text}$`, $options: 'i' } },
+                { kunyomi: { $regex: `${text}$`, $options: 'i' } },
+                {
+                    kunyomi: {
+                        $elemMatch: {
+                            $regex: `^-?${text}$`,
+                            $options: 'i'
+                        }
+                    }
+                }
+            ]
+        };
+
+        // Tìm kiếm kết quả với hậu tố
+        const suffixResults = await Kanji.find(suffixQuery).limit(10 - prefixResults.length); // Giới hạn số kết quả thêm vào
+
+        // Kết hợp kết quả tiền tố và hậu tố
+        const combinedResults = [...prefixResults, ...suffixResults];
+
+        if (combinedResults.length > 0) {
+            return res.json(combinedResults);
         } else {
             return res.status(404).json({ message: 'No kanji found matching your search' });
         }
@@ -159,3 +197,4 @@ export const searchKanji = async (req, res) => {
         return res.status(500).json({ message: 'Server error', error: error.message });
     }
 };
+

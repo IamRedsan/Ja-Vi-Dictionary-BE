@@ -10,7 +10,8 @@ const KanjiSchema = new mongoose.Schema({
     strokes: { type: Number },
     jlpt_level: { type: Number },
     composition: [{ type: mongoose.Schema.Types.ObjectId, ref: 'compositions' }],
-    meaning: { type: String }
+    meaning: { type: String },
+    romanji: [{ type: String }]
 }, {
     collection: 'kanji'
 });
