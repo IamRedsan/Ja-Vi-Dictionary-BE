@@ -1,8 +1,10 @@
 import mongoose from "mongoose";
-import composition from "./Composition.js"
+import composition from "./Composition.js";
+const { ObjectId } = mongoose.Schema.Types;
+
 
 const KanjiSchema = new mongoose.Schema({
-    id: { type: Number, required: true },
+    id: { type: ObjectId, required: true },
     text: { type: String, required: true },
     phonetic: [{ type: String }],
     onyomi: [{ type: String }],

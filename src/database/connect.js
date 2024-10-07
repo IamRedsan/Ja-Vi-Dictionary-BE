@@ -1,9 +1,7 @@
 import mongoose from 'mongoose';
 
-const connectDB = async () => {
+const connectDB = async (uri) => {
     try {
-        const uri = 'mongodb://localhost:27017/JVDictionary';
-
         await mongoose.connect(uri, {
             useNewUrlParser: true,
             useUnifiedTopology: true,
