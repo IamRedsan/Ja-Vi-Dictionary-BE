@@ -47,16 +47,12 @@ export const getKanjiList = async (req, res, next) => {
 
 //GET /api/v1/kanjis/jlpt/3?page=2&limit=10
 export const getKanjiByJLPTLevel = async (req, res, next) => {
-    const { level } = req.params;
+    const level  = parseInt(req.query.level) || 5;
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 60;
 
-    if (!level || isNaN(level) || level < 1 || level > 5) {
-        return res.status(400).json({ message: 'Please provide a valid JLPT level (1-5)' });
-    }
-
     try {
-        const total = await Kanji.countDocuments();
+        const total = await Kanji.countDocuments({ jlpt_level: level} );
         const totalPages = Math.ceil(total / limit);
 
         if (page > totalPages) {
