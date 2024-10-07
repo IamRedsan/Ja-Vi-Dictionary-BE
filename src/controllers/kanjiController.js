@@ -35,7 +35,7 @@ export const getKanjiList = async (req, res, next) => {
             phonetic: kanji.phonetic[0]
         }));
 
-        return res.json({
+        return res.status(StatusCodes.OK).json({
             totalPages,
             currentPage: page,
             kanjis: formattedResults
@@ -69,7 +69,7 @@ export const getKanjiByJLPTLevel = async (req, res, next) => {
         }));
 
         if (formattedResults.length > 0) {
-            return res.json({
+            return res.status(StatusCodes.OK).json({
                 totalPages,
                 currentPage: page,
                 kanjis: formattedResults
@@ -85,7 +85,7 @@ export const getKanjiByJLPTLevel = async (req, res, next) => {
 //GET /api/v1/kanjis/getById/670151f0e13093d82a7e1d6e
 export const getKanjiById = async (req, res, next) => {
     const { id } = req.params;
-
+    
     try {
         if (!id || id.trim() === '') {
             throw new BadRequestError("Bad Request!");
@@ -93,7 +93,7 @@ export const getKanjiById = async (req, res, next) => {
 
         const result = await Kanji.findById(id);
         if (result) {
-            return res.json(result);
+            return res.status(StatusCodes.OK).json(result);
         } else {
             throw new NotFoundError("Không tìm thấy kanji!");
         }
@@ -113,7 +113,7 @@ export const getKanjiByText = async (req, res, next) => {
 
         const result = await Kanji.findOne({ text });
         if (result) {
-            return res.json(result);
+            return res.status(StatusCodes.OK).json(result);
         } else {
             throw new NotFoundError("Không tìm thấy kanji!");
         }
@@ -128,7 +128,7 @@ export const searchKanji = async (req, res, next) => {
 
     try {
         if (!text || text.trim() === '') {
-            return res.status(400).json({ message: 'NotFound' });
+            throw new BadRequestError("Bad request");
         }
 
         // Tạo truy vấn cho tiền tố
@@ -158,7 +158,7 @@ export const searchKanji = async (req, res, next) => {
         }));
 
         if (prefixResults.length >= 10) {
-            return res.json(formattedResults); // Trả về kết quả nếu đủ 10
+            return res.status(StatusCodes.OK).json(formattedResults); // Trả về kết quả nếu đủ 10
         }
 
         // Nếu không đủ 10 kết quả, tạo truy vấn cho hậu tố
@@ -190,7 +190,7 @@ export const searchKanji = async (req, res, next) => {
         }));
 
         if (combinedResults.length > 0) {
-            return res.json(formattedResults2);
+            return res.status(StatusCodes.OK).json(formattedResults2);
         } else {
             throw new NotFoundError("Không tìm thấy kanji nào!");
         }
