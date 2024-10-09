@@ -30,7 +30,7 @@ export const getKanjiList = async (req, res, next) => {
             .limit(limit);
 
         const formattedResults = results.map(kanji => ({
-            id: kanji._id,
+            _id: kanji._id,
             text: kanji.text,
             phonetic: kanji.phonetic[0]
         }));
@@ -63,7 +63,7 @@ export const getKanjiByJLPTLevel = async (req, res, next) => {
             skip((page - 1) * limit).limit(limit);
 
         const formattedResults = results.map(kanji => ({
-            id: kanji._id,
+            _id: kanji._id,
             text: kanji.text,
             phonetic: kanji.phonetic[0]
         }));
@@ -153,7 +153,7 @@ export const searchKanji = async (req, res, next) => {
         const prefixResults = await Kanji.find(prefixQuery).limit(10); // Giới hạn kết quả tìm kiếm là 10
 
         const formattedResults = prefixResults.map(kanji => ({
-            id: kanji._id,
+            _id: kanji._id,
             text: kanji.text,
             phonetic: kanji.phonetic[0]
         }));
@@ -185,7 +185,7 @@ export const searchKanji = async (req, res, next) => {
         const combinedResults = [...prefixResults, ...suffixResults];
 
         const formattedResults2 = combinedResults.map(kanji => ({
-            id: kanji._id,
+            _id: kanji._id,
             text: kanji.text,
             phonetic: kanji.phonetic[0]
         }));
