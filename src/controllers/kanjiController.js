@@ -91,7 +91,8 @@ export const getKanjiById = async (req, res, next) => {
             throw new BadRequestError("Bad Request!");
         }
 
-        const result = await Kanji.findById(id);
+        const result = await Kanji.findById(id).populate("composition");
+        console.log(result);
         if (result) {
             return res.status(StatusCodes.OK).json(result);
         } else {

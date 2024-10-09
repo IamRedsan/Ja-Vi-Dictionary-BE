@@ -20,7 +20,7 @@ export const getWordById = async (req, res, next)=>{
             throw new BadRequestError("Bad Request!");
         }
 
-        const result = await Word.findById(id);
+        const result = await Word.findById(id).populate("kanji");
 
         if(result){
             return res.status(StatusCodes.OK).json(result);

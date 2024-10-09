@@ -4,11 +4,14 @@ import kanjiRouter from "./routes/kanjiRoutes.js";
 import wordRouter from "./routes/wordRoutes.js"
 import dotenv from 'dotenv';
 import { ErrorHanlder } from "./middlewares/ErrorHandler.js";
+import cors from "cors";
+import "express-async-errors";
 
 dotenv.config();
 
 const app = express();
 app.use(express.json());
+app.use(cors());
 
 // router
 app.use("/api/v1/compositions", compositionRouter);
