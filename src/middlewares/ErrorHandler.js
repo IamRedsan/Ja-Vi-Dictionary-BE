@@ -6,6 +6,7 @@ export const ErrorHanlder = (err, req, res, next)=>{
     console.log(err);
 
     const responseError = {
+        status: "error",
         statusCode: err.statusCode,
         message: err.message || StatusCodes[err.statusCode],
         stack: err.stack

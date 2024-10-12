@@ -1,12 +1,16 @@
 import BadRequestError from "../errors/BadRequestError.js";
 import NotFoundError from "../errors/NotFoundError.js";
 import Word from "../models/Word.js";
+import Kanji from "../models/Kanji.js";
 import { StatusCodes } from "http-status-codes";
 
 export const getAllWords = async (req, res) => {
     try {
         const words = await Word.find();
-        res.status(StatusCodes.OK).send(words);
+        res.status(StatusCodes.OK).send({
+            status: "success",
+            data: words
+        });
     } catch (error) {
         next(error);
     }
@@ -20,10 +24,19 @@ export const getWordById = async (req, res, next)=>{
             throw new BadRequestError("Bad Request!");
         }
 
-        const result = await Word.findById(id).populate("kanji");
+        const result = await Word.findById(id);
 
-        if(result){
-            return res.status(StatusCodes.OK).json(result);
+        if (result) {
+            const kanjiTexts = result.kanji.map(kanji => kanji);
+            const kanjiDetails = await Kanji.find({ text: { $in: kanjiTexts } });
+            console.log(kanjiDetails);
+
+            result.kanji = kanjiDetails;
+
+            return res.status(StatusCodes.OK).json({
+                status: "success",
+                data: result
+            });
         } else {
             throw new NotFoundError("Không tìm thấy dữ liệu!");
         }
@@ -57,7 +70,9 @@ export const searchWord = async (req, res, next) => {
 
         // Nếu đã có đủ 10 kết quả, trả về ngay
         if (prefixResults.length >= 10) {
-            return res.status(StatusCodes.OK).json(prefixResults);
+            return res.status(StatusCodes.OK).json({
+                status: "success",
+                data: prefixResults});
         }
 
         // Nếu chưa đủ 10 kết quả, thực hiện truy vấn bổ sung theo hậu tố
@@ -76,9 +91,18 @@ export const searchWord = async (req, res, next) => {
         // Kết hợp kết quả từ cả hai truy vấn
         const results = [...prefixResults, ...suffixResults];
 
+        const formattedResults = results.map(word => ({
+            _id: word._id,
+            text: word.text,
+            hiragana: word.hiragana[0],
+            meaning: word.meaning[0].content
+        }));
         // Kiểm tra và trả về kết quả
         if (results.length > 0) {
-            return res.status(StatusCodes.OK).json(results);
+            return res.status(StatusCodes.OK).json({
+                status: "success",
+                data: formattedResults
+            });
         } else {
             throw new NotFoundError("Không tìm thấy từ nào phù hợp.");
         }
