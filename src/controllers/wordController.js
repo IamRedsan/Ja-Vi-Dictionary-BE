@@ -24,19 +24,10 @@ export const getWordById = async (req, res, next)=>{
             throw new BadRequestError("Bad Request!");
         }
 
-        const result = await Word.findById(id);
+        const result = await Word.findById(id).populate("kanji");
 
-        if (result) {
-            const kanjiTexts = result.kanji.map(kanji => kanji);
-            const kanjiDetails = await Kanji.find({ text: { $in: kanjiTexts } });
-            console.log(kanjiDetails);
-
-            result.kanji = kanjiDetails;
-
-            return res.status(StatusCodes.OK).json({
-                status: "success",
-                data: result
-            });
+        if(result){
+            return res.status(StatusCodes.OK).json(result);
         } else {
             throw new NotFoundError("Không tìm thấy dữ liệu!");
         }
