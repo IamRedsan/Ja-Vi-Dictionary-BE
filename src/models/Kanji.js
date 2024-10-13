@@ -4,7 +4,6 @@ const { ObjectId } = mongoose.Schema.Types;
 
 
 const KanjiSchema = new mongoose.Schema({
-    id: { type: ObjectId, required: true },
     text: { type: String, required: true },
     phonetic: [{ type: String }],
     onyomi: [{ type: String }],

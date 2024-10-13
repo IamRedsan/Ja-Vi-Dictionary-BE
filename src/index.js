@@ -1,7 +1,4 @@
 import express from "express";
-import compositionRouter from "./routes/compositionRoutes.js"
-import kanjiRouter from "./routes/kanjiRoutes.js";
-import wordRouter from "./routes/wordRoutes.js"
 import dotenv from 'dotenv';
 import { ErrorHanlder } from "./middlewares/ErrorHandler.js";
 import cors from "cors";
@@ -14,6 +11,12 @@ app.use(express.json());
 app.use(cors());
 
 // router
+import compositionRouter from "./routes/compositionRoutes.js"
+import kanjiRouter from "./routes/kanjiRoutes.js";
+import wordRouter from "./routes/wordRoutes.js";
+import authRouter from "./routes/authRoutes.js";
+
+app.use("/api/v1/auth", authRouter);
 app.use("/api/v1/compositions", compositionRouter);
 app.use("/api/v1/kanjis", kanjiRouter);
 app.use("/api/v1/words", wordRouter);
