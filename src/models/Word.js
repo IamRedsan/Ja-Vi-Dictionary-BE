@@ -16,7 +16,8 @@ const WordSchema = new mongoose.Schema({
     hiragana: { type: [String] },
     meaning: { type: [meaningSchema], required: true },
     examples: { type: [exampleSchema] },
-    kanji: { type: [Object] }
+    kanji: { type: [Object] },
+    romanji: { type: String },
 }, {
     collection: 'word'
 });

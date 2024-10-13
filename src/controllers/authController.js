@@ -5,6 +5,7 @@ import nodemailer from 'nodemailer';
 import InternalServerError from "../errors/InternalServerError .js";
 import dotenv from "dotenv";
 import NotFoundError from "../errors/NotFoundError.js";
+import { StatusCodes } from "http-status-codes";
 
 dotenv.config();
 
@@ -39,7 +40,7 @@ export const signUp = async (req, res, next) => {
                 });
 
                 newUser.save().then((result) => {
-                    sendOTPVerificationEmail(result, res, next);
+                    sendOTPVerificationEmail({email}, res, next);
                 });
             })
     } catch(err){
@@ -47,10 +48,13 @@ export const signUp = async (req, res, next) => {
     }
 };
 
-const sendOTPVerificationEmail = async (user, res, next) => {
+const sendOTPVerificationEmail = async ({email}, res, next) => {
     try{
-        console.log("Email:", process.env.EMAIL);
-        console.log("Password:", process.env.EMAIL_PASSWORD);
+        const user = await User.findOne({email});
+
+        if(!user){
+            throw new NotFoundError("Không tìm thấy thông tin người dùng, vui lòng đăng ký!");
+        }
         const otp = `${Math.floor(1000 + Math.random() * 9000)}`;
         const mailOptions = {
             from: process.env.EMAIL,
@@ -74,11 +78,13 @@ const sendOTPVerificationEmail = async (user, res, next) => {
         if (info.accepted.length <= 0){
             throw new InternalServerError("Lỗi khi gửi mã xác thực, xin hãy thử lại!");
         } 
-        res.json({
+
+        return res.status(StatusCodes.OK).json({
             status: "pending",
             message: "Mã OTP đã được gửi tới email của bạn!",
             data: user
         });
+
     } catch(err){
         next(err);
     }
@@ -108,14 +114,36 @@ export const verifyOTP = async (req, res, next) => {
         user.verified = true;
         user.otpVerification = undefined;
         await user.save();
-        res.json({
+        return res.status(StatusCodes.OK).json({
             status: "verified",
-            message: "Tài khoản của bạn đã được xác thực thành công!"
-        })
+            message: "Xác thực tài khoản thành công!"
+        });
     } catch(error) {
         next(error);
     }
 };
+
+//Resend OTP
+export const resendOTP = async (req, res, next) => {
+    try{
+        const {email} = req.body;
+        if(!email){
+            throw new BadRequestError("Thông tin không hợp lệ, vui lòng thử lại!");
+        }
+        const user = await User.findOne({email});
+        user.otpVerification = {};
+        sendOTPVerificationEmail(user, res, next);
+
+        return res.status(StatusCodes.OK).json({
+            status: "success",
+            message: "Mã OTP đã được gửi tới email của bạn!"
+        });
+
+    } catch(error){
+        next(error);
+    }
+}; 
+
 
 //Login
 export const login = async (req, res, next) => {

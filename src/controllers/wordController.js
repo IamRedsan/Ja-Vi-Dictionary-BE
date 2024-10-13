@@ -37,8 +37,12 @@ export const getWordById = async (req, res, next)=>{
                     return kanjiChar; 
                 }
             });
+
             const kanjiInfoArray = await Promise.all(kanjiInfoPromises);
-            result.kanji = kanjiInfoArray.filter(Boolean) || {};
+
+            const flattenedKanjiInfoArray = kanjiInfoArray.flat();
+
+            result.kanji = flattenedKanjiInfoArray || {};
 
             return res.status(StatusCodes.OK).json({
                 status: "success",
