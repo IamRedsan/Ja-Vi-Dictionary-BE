@@ -24,10 +24,26 @@ export const getWordById = async (req, res, next)=>{
             throw new BadRequestError("Bad Request!");
         }
 
-        const result = await Word.findById(id).populate("kanji");
+        const result = await Word.findById(id);
 
         if(result){
-            return res.status(StatusCodes.OK).json(result);
+            const kanjiInfoPromises = result.kanji.map(async (kanjiChar) => {
+                // Tìm tất cả các kanji phù hợp với text của từng kanji
+                const kanjiData = await Kanji.find({ text: kanjiChar });
+ 
+                if (kanjiData && kanjiData.length > 0) {
+                    return kanjiData;
+                } else {
+                    return kanjiChar; 
+                }
+            });
+            const kanjiInfoArray = await Promise.all(kanjiInfoPromises);
+            result.kanji = kanjiInfoArray.filter(Boolean) || {};
+
+            return res.status(StatusCodes.OK).json({
+                status: "success",
+                data: result
+            });
         } else {
             throw new NotFoundError("Không tìm thấy dữ liệu!");
         }
