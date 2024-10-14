@@ -3,11 +3,12 @@ import InternalServerError from "../errors/InternalServerError .js";
 import NotFoundError from "../errors/NotFoundError.js";
 import Kanji from "../models/Kanji.js";
 import { StatusCodes } from "http-status-codes";
+import { kanjiService } from "../services/kanjiService.js";
 
 //Get /api/v1/kanjis
-export const getAllKanjis = async (req, res, next) => {
+const getAllKanjis = async (req, res, next) => {
     try {
-        const kanjis = await Kanji.find().populate('composition');
+        const kanjis = await kanjiService.getAllKanjis();
         res.status(StatusCodes.OK).send({
             status: "success",
             data: kanjis
@@ -18,167 +19,58 @@ export const getAllKanjis = async (req, res, next) => {
 };
 
 //GET /api/v1/kanjis/jlpt/3?page=2&limit=10
-export const getKanjiByJLPTLevel = async (req, res, next) => {
-    const level  = parseInt(req.query.level) || 5;
-    const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 60;
-
+const getKanjiByJLPTLevel = async (req, res, next) => {
     try {
-        const total = await Kanji.countDocuments({ jlpt_level: level} );
-        const totalPages = Math.ceil(total / limit);
-
-        if (page > totalPages) {
-            throw new NotFoundError("Không có dữ liệu!");
-        }
-
-        const results = await Kanji.find({ jlpt_level: level }, { text: 1, phonetic: 1 }).
-            skip((page - 1) * limit).limit(limit);
-
-        const formattedResults = results.map(kanji => ({
-            _id: kanji._id,
-            text: kanji.text,
-            phonetic: kanji.phonetic[0]
-        }));
-
-        if (formattedResults.length > 0) {
-            return res.status(StatusCodes.OK).json({
-                status:"success",
-                totalPages,
-                currentPage: page,
-                data: formattedResults
-            });
-        } else {
-            throw new NotFoundError('Không tìm thấy kanji theo cấp độ JLPT được chỉ định!')
-        }
+        const result = await kanjiService.getKanjiByJLPTLevel(req);
+        return res.status(StatusCodes.OK).json({
+            status:"success",
+            ...result
+        });    
     } catch (error) {
         next(error);
     }
 };
 
 //GET /api/v1/kanjis/getById/670151f0e13093d82a7e1d6e
-export const getKanjiById = async (req, res, next) => {
-    const { id } = req.params;
-    
+const getKanjiById = async (req, res, next) => {
     try {
-        if (!id || id.trim() === '') {
-            throw new BadRequestError("Bad Request!");
-        }
-
-        const result = await Kanji.findById(id).populate("composition");
-        console.log(result);
-        if (result) {
-            return res.status(StatusCodes.OK).json({status: "success", data: result});
-        } else {
-            throw new NotFoundError("Không tìm thấy kanji!");
-        }
+        const result = await kanjiService.getKanjiById(req);
+        return res.status(StatusCodes.OK).json({status: "success", data: result});
     } catch (error) {
         next(error);
     }
 };
 
 //GET /api/v1/kanjis/getByText/容
-export const getKanjiByText = async (req, res, next) => {
-    const { text } = req.params;
-
+const getKanjiByText = async (req, res, next) => {
     try {
-        if (!text || text.trim() === '') {
-            throw new BadRequestError("Bad Request!");
-        }
-
-        const result = await Kanji.findOne({ text });
-        if (result) {
-            return res.status(StatusCodes.OK).json({
-                status: "success",
-                data: result
-            });
-        } else {
-            throw new NotFoundError("Không tìm thấy kanji!");
-        }
+        const result = await kanjiService.getKanjiByText(req);
+        return res.status(StatusCodes.OK).json({
+            status: "success",
+            data: result
+        });
     } catch (error) {
         next(error);
     }
 };
 
 //GET /api/v1/kanjis/search?text=ニ
-export const searchKanji = async (req, res, next) => {
-    const { text } = req.query;
-
+const searchKanji = async (req, res, next) => {
     try {
-        if (!text || text.trim() === '') {
-            throw new BadRequestError("Bad request");
-        }
-
-        // Tạo truy vấn cho tiền tố
-        const prefixQuery = {
-            $or: [
-                { text: { $regex: `^${text}`, $options: 'i' } },
-                { romanji: { $regex: `^${text}`, $options: 'i' } },
-                { onyomi: { $regex: `^${text}`, $options: 'i' } },
-                { kunyomi: { $regex: `^${text}`, $options: 'i' } },
-                {
-                    kunyomi: {
-                        $elemMatch: {
-                            $regex: `^-?${text}`,
-                            $options: 'i'
-                        }
-                    }
-                }
-            ]
-        };
-
-        const prefixResults = await Kanji.find(prefixQuery).limit(10); // Giới hạn kết quả tìm kiếm là 10
-
-        const formattedResults = prefixResults.map(kanji => ({
-            _id: kanji._id,
-            text: kanji.text,
-            phonetic: kanji.phonetic[0]
-        }));
-
-        if (prefixResults.length >= 10) {
-            return res.status(StatusCodes.OK).json({
-                status: "success",
-                data: formattedResults
-            }); // Trả về kết quả nếu đủ 10
-        }
-
-        // Nếu không đủ 10 kết quả, tạo truy vấn cho hậu tố
-        const suffixQuery = {
-            $or: [
-                { text: { $regex: `${text}$`, $options: 'i' } },
-                { romanji: { $regex: `${text}$`, $options: 'i' } },
-                { onyomi: { $regex: `${text}$`, $options: 'i' } },
-                { kunyomi: { $regex: `${text}$`, $options: 'i' } },
-                {
-                    kunyomi: {
-                        $elemMatch: {
-                            $regex: `^-?${text}$`,
-                            $options: 'i'
-                        }
-                    }
-                }
-            ]
-        };
-
-        const suffixResults = await Kanji.find(suffixQuery).limit(10 - prefixResults.length); // Giới hạn số kết quả thêm vào
-
-        const combinedResults = [...prefixResults, ...suffixResults];
-
-        const formattedResults2 = combinedResults.map(kanji => ({
-            _id: kanji._id,
-            text: kanji.text,
-            phonetic: kanji.phonetic[0]
-        }));
-
-        if (combinedResults.length > 0) {
-            return res.status(StatusCodes.OK).json({
-                status: "success",
-                data: formattedResults2
-            });
-        } else {
-            throw new NotFoundError("Không tìm thấy kanji nào!");
-        }
+        const result = await kanjiService.searchKanji(req);
+        return res.status(StatusCodes.OK).json({
+            status: "success",
+            data: result
+        });
     } catch (error) {
         next(error);
     }
 };
 
+export const kanjiController = {
+    getAllKanjis,
+    getKanjiByJLPTLevel,
+    getKanjiById,
+    getKanjiByText,
+    searchKanji
+}

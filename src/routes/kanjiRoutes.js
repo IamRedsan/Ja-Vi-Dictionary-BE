@@ -1,19 +1,15 @@
 import express from "express";
 import {
-    getAllKanjis,
-    searchKanji,
-    getKanjiByText,
-    getKanjiById,
-    getKanjiByJLPTLevel,
+   kanjiController
 } from "../controllers/kanjiController.js";
 
 const kanjiRouter = express.Router();
 
-kanjiRouter.route("/").get(getAllKanjis);
-kanjiRouter.route("/jlpt/").get(getKanjiByJLPTLevel);
-kanjiRouter.route("/text/:text").get(getKanjiByText);
-kanjiRouter.route("/search").get(searchKanji);
-kanjiRouter.route("/:id").get(getKanjiById);
+kanjiRouter.route("/").get(kanjiController.getAllKanjis);
+kanjiRouter.route("/jlpt/").get(kanjiController.getKanjiByJLPTLevel);
+kanjiRouter.route("/text/:text").get(kanjiController.getKanjiByText);
+kanjiRouter.route("/search").get(kanjiController.searchKanji);
+kanjiRouter.route("/:id").get(kanjiController.getKanjiById);
 
 export default kanjiRouter;
 

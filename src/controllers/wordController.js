@@ -1,11 +1,7 @@
-import BadRequestError from "../errors/BadRequestError.js";
-import NotFoundError from "../errors/NotFoundError.js";
-import Word from "../models/Word.js";
-import Kanji from "../models/Kanji.js";
 import { StatusCodes } from "http-status-codes";
 import { wordService } from "../services/wordService.js";
 
-export const getAllWords = async (req, res) => {
+const getAllWords = async (req, res) => {
     try {
         const words = wordService.getAllWords();
 
@@ -19,7 +15,7 @@ export const getAllWords = async (req, res) => {
 };
 
 //GET /api/v1/words/{id}
-export const getWordById = async (req, res, next)=>{
+const getWordById = async (req, res, next)=>{
     try{
         const result = await wordService.getWordById(req);
         return res.status(StatusCodes.OK).json({
@@ -33,7 +29,7 @@ export const getWordById = async (req, res, next)=>{
 };
 
 //GET /api/v1/words/search?text={}
-export const searchWord = async (req, res, next) => {
+const searchWord = async (req, res, next) => {
     try {
         const result = await wordService.searchWord(req);
         return res.status(StatusCodes.OK).json({
@@ -42,6 +38,11 @@ export const searchWord = async (req, res, next) => {
         });
     } catch (error) {
         next(error);  
-    }
+    } 
 };
 
+export const wordController = {
+    getAllWords,
+    getWordById, 
+    searchWord
+};
