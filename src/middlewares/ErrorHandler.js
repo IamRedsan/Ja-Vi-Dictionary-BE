@@ -9,7 +9,6 @@ export const ErrorHanlder = (err, req, res, next)=>{
         status: "error",
         statusCode: err.statusCode,
         message: err.message || StatusCodes[err.statusCode],
-        stack: err.stack
     }
 
     //  console.error(responseError)
