@@ -1,13 +1,12 @@
 import { StatusCodes } from "http-status-codes";
-
-class NotFoundError extends Error{
+class UnauthorizedError extends Error{
     constructor(message){
         super(message);
         
         Error.captureStackTrace(this, this.constructor);
         
         this.name = this.constructor.name;
-        this.statusCode = StatusCodes.NOT_FOUND;
+        this.statusCode = StatusCodes.UNAUTHORIZED;
     }
 
     statusCode(){
@@ -15,4 +14,4 @@ class NotFoundError extends Error{
     }
 }
 
-export default NotFoundError;
+export default UnauthorizedError;

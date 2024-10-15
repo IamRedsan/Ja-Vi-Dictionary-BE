@@ -1,9 +1,6 @@
 import BadRequestError from "../errors/BadRequestError.js";
-import InternalServerError from "../errors/InternalServerError .js";
 import NotFoundError from "../errors/NotFoundError.js";
 import Kanji from "../models/Kanji.js";
-import { StatusCodes } from "http-status-codes";
-
 const getAllKanjis = async () => {
     try {
         const kanjis = await Kanji.find().populate('composition');

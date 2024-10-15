@@ -26,6 +26,7 @@ const signUp = async (req, res, next) => {
 const verifyOTP = async (req, res, next) => {
     try {
         await authService.verifyOTP(req);
+
         return res.status(StatusCodes.OK).json({
             status: "verified",
             message: "Xác thực tài khoản thành công!"
@@ -51,12 +52,35 @@ const resendOTP = async (req, res, next) => {
 
 //Login
 const login = async (req, res, next) => {
-
+    try{
+        const result = await authService.login(req);
+        return res.status(StatusCodes.OK).json({
+            status: "success",
+            message: "Đăng nhập thành công!",
+            data: result
+        });
+    } catch(error){
+        next(error);
+    }
 };
+
+//Refresh Token
+const refreshToken = async (req, res, next) => {
+    try{
+        const result = await authService.refreshToken(req);
+        return res.status(StatusCodes.OK).json({
+            status: "success",
+            accessToken: result
+        })
+    } catch(error){
+        next(error);
+    }
+}
 
 export const authController = {
     signUp, 
     verifyOTP,
     resendOTP,
-    login
+    login, 
+    refreshToken
 };

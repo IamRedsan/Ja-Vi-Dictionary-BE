@@ -5,7 +5,11 @@ import nodemailer from 'nodemailer';
 import InternalServerError from "../errors/InternalServerError .js";
 import dotenv from "dotenv";
 import NotFoundError from "../errors/NotFoundError.js";
-import { StatusCodes } from "http-status-codes";
+import UnauthorizedError from "../errors/UnauthorizedError.js";
+import ForbiddenError from "../errors/ForbiddenError.js";
+import jwt from "jsonwebtoken";
+import randToken from "rand-token";
+
 
 dotenv.config();
 
@@ -22,13 +26,18 @@ const transporter = nodemailer.createTransport({
 const signUp = async (data) => {
     const {username, password, email, fullname} = data.body;
 
-    try {
-        if (username == "" || email == "" || password == "" || fullname == "") {
-            throw new BadRequestError("Thông tin nhập vào không hợp lệ!");
+    try {        
+        const usernameIsExist = await User.findOne({username});
+        if(usernameIsExist) {
+            throw new BadRequestError("Tên đăng nhập đã tồn tại, vui lòng đăng ký với tên đăng nhập khác!");
+        }
+        const emailIsExist = await User.findOne({email});
+        if(emailIsExist) {
+            throw new BadRequestError("Email đã tồn tại, vui lòng đăng ký với email khác!");
         }
         
         const saltRounds = 10;
-        const hashedPass = await bcrypt.hash(password, saltRounds); // Sử dụng await ở đây
+        const hashedPass = await bcrypt.hash(password, saltRounds); 
         const newUser = new User({
             username,
             password: hashedPass,
@@ -38,7 +47,7 @@ const signUp = async (data) => {
             verified: false
         });
 
-        await newUser.save(); // Chờ cho người dùng được lưu vào DB
+        await newUser.save(); 
 
         const result = await sendOTPVerificationEmail(email); // Đợi hàm gửi OTP trả về kết quả
         console.log(result);
@@ -113,7 +122,7 @@ export const verifyOTP = async (data) => {
         await user.save();
         return;
     } catch(error) {
-        next(error);
+        throw error;
     }
 };
 
@@ -136,12 +145,87 @@ const resendOTP = async (data) => {
 }; 
 
 const login = async (data) => {
+    try{
+        const {username, password} = data.body;
+        const user = await User.findOne({username});
+        if(!user){
+            throw new NotFoundError("Không tìm thấy tài khoản, vui lòng đăng ký!");
+        }
+        const isMatchPassword = await bcrypt.compare(password, user.password);
+        if(!isMatchPassword){
+            throw new UnauthorizedError("Mật khẩu không chính xác, vui lòng thử lại!");
+        }
+        if(!user.verified){
+            throw new ForbiddenError("Tài khoản chưa được xác thực, vui lòng xác thực để đăng nhập!");
+        }
 
+        const payload = {
+            id: user._id.toString(),
+            role: user.role
+        }
+        const accessToken = jwt.sign(payload, 
+            process.env.JWT_SECRET, 
+            {
+                expiresIn: process.env.JWT_SECRET
+            });
+        if(!accessToken){
+            throw new UnauthorizedError("Đăng nhập không thành công, vui lòng thử lại!");
+        }
+        let refreshToken = randToken.generate(256);
+        if(!user.refreshToken){
+            user.refreshToken = refreshToken;
+            await user.save();
+        }
+        else {
+            refreshToken = user.refreshToken;
+        }
+        return {
+            user,
+            accessToken,
+            refreshToken
+        };
+    } catch(error){
+        throw error;
+    }
+};
+
+const refreshToken = async (data) => {
+    try{
+        const refreshToken = data.body.refreshToken;
+        if(!refreshToken){
+            throw new BadRequestError("Không tìm thấy Refresh Token!");
+        }
+        const user = await User.findById(data.userId);
+        if(!user) {
+            throw new NotFoundError("Người dùng không tồn tại!");
+        }
+        
+        if(refreshToken !== user.refreshToken){
+            throw new BadRequestError("Refresh Token không hợp lệ!");
+        }
+
+        const payload = {
+            id: user._id.toString(),
+            role: user.role
+        }
+        const accessToken = jwt.sign(payload, 
+            process.env.JWT_SECRET, 
+            {
+                expiresIn: process.env.JWT_SECRET
+            });
+        if(!accessToken){
+            throw new UnauthorizedError("Đăng nhập không thành công, vui lòng thử lại!");
+        }
+        return accessToken;
+    }catch(error){
+        throw error;
+    }
 };
 
 export const authService = {
     signUp, 
     verifyOTP,
     resendOTP,
-    login
+    login,
+    refreshToken
 };
