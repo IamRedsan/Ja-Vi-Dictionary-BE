@@ -92,7 +92,7 @@ const isKanji = (char) => {
 
 const searchKanji = async (data) => {
     const { text } = data.query;
-
+    const limit = 16;
     try {
         if (!text || text.trim() === '') {
             throw new BadRequestError("Bad request");
@@ -107,7 +107,7 @@ const searchKanji = async (data) => {
             }));
 
             const kanjiQuery = { $or: kanjiQueries };
-            result = await Kanji.find(kanjiQuery).limit();
+            result = await Kanji.find(kanjiQuery).limit(limit);
         } else {
             const query = {
                 $or: [
@@ -125,9 +125,9 @@ const searchKanji = async (data) => {
                     }
                 ]
             };
-            result = await Kanji.find(query).limit(10);
+            result = await Kanji.find(query).limit(limit);
 
-            if (result.length < 10) {
+            if (result.length < limit) {
                 const suffixQuery = {
                     $or: [
                         { text: { $regex: `${text}$`, $options: 'i' } },

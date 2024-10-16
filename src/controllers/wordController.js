@@ -3,7 +3,7 @@ import { wordService } from "../services/wordService.js";
 
 const getAllWords = async (req, res) => {
     try {
-        const words = wordService.getAllWords();
+        const words = await wordService.getAllWords();
 
         res.status(StatusCodes.OK).send({
             status: "success",

@@ -17,7 +17,7 @@ const WordSchema = new mongoose.Schema({
     meaning: { type: [meaningSchema], required: true },
     examples: { type: [exampleSchema] },
     kanji: { type: [Object] },
-    romanji: { type: String },
+    romanji: { type: [String] },
 }, {
     collection: 'word'
 });
