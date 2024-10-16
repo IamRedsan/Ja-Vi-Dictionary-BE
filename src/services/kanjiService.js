@@ -85,6 +85,11 @@ const getKanjiByText = async (data) => {
     }
 };
 
+const isKanji = (char) => {
+    const code = char.charCodeAt(0);
+    return (code >= 0x4E00 && code <= 0x9FBF); // Phạm vi Unicode cho Kanji
+};
+
 const searchKanji = async (data) => {
     const { text } = data.query;
 
@@ -92,49 +97,65 @@ const searchKanji = async (data) => {
         if (!text || text.trim() === '') {
             throw new BadRequestError("Bad request");
         }
+        const kanjiChars = [...text].filter(char => isKanji(char)); 
 
-        const prefixQuery = {
-            $or: [
-                { text: { $regex: `^${text}`, $options: 'i' } },
-                { romanji: { $regex: `^${text}`, $options: 'i' } },
-                { onyomi: { $regex: `^${text}`, $options: 'i' } },
-                { kunyomi: { $regex: `^${text}`, $options: 'i' } },
-                {
-                    kunyomi: {
-                        $elemMatch: {
-                            $regex: `^-?${text}`,
-                            $options: 'i'
-                        }
-                    }
-                }
-            ]
-        };
+        let result = [];
 
-        let result = await Kanji.find(prefixQuery).limit(10); 
+        if (kanjiChars.length > 0) {
+            const kanjiQueries = kanjiChars.map(char => ({
+                text: { $regex: char, $options: 'i' }
+            }));
 
-        if (result.length < 10) {
-            const suffixQuery = {
+            const kanjiQuery = { $or: kanjiQueries };
+            result = await Kanji.find(kanjiQuery).limit();
+        } else {
+            const query = {
                 $or: [
-                    { text: { $regex: `${text}$`, $options: 'i' } },
-                    { romanji: { $regex: `${text}$`, $options: 'i' } },
-                    { onyomi: { $regex: `${text}$`, $options: 'i' } },
-                    { kunyomi: { $regex: `${text}$`, $options: 'i' } },
+                    { text: { $regex: `^${text}`, $options: 'i' } },
+                    { romanji: { $regex: `^${text}`, $options: 'i' } },
+                    { onyomi: { $regex: `^${text}`, $options: 'i' } },
+                    { kunyomi: { $regex: `^${text}`, $options: 'i' } },
                     {
                         kunyomi: {
                             $elemMatch: {
-                                $regex: `^-?${text}$`,
+                                $regex: `^-?${text}`,
                                 $options: 'i'
                             }
                         }
                     }
                 ]
             };
+            result = await Kanji.find(query).limit(10);
+
+            if (result.length < 10) {
+                const suffixQuery = {
+                    $or: [
+                        { text: { $regex: `${text}$`, $options: 'i' } },
+                        { romanji: { $regex: `${text}$`, $options: 'i' } },
+                        { onyomi: { $regex: `${text}$`, $options: 'i' } },
+                        { kunyomi: { $regex: `${text}$`, $options: 'i' } },
+                        {
+                            kunyomi: {
+                                $elemMatch: {
+                                    $regex: `^-?${text}$`,
+                                    $options: 'i'
+                                }
+                            }
+                        }
+                    ]
+                };
     
-            const suffixResults = await Kanji.find(suffixQuery).limit(10 - result.length);
-            result = [...result, ...suffixResults]
+                const suffixResults = await Kanji.find(suffixQuery).limit(10 - result.length);
+                result = [...result, ...suffixResults];
+            }
         }
 
-        const formattedResults = result.map(kanji => ({
+        const uniqueResults = {};
+        result.forEach(kanji => {
+            uniqueResults[kanji._id] = kanji; 
+        });
+
+        const formattedResults = Object.values(uniqueResults).map(kanji => ({
             _id: kanji._id,
             text: kanji.text,
             phonetic: kanji.phonetic[0],
@@ -147,6 +168,7 @@ const searchKanji = async (data) => {
         } else {
             throw new NotFoundError("Không tìm thấy kanji nào!");
         }
+
     } catch (error) {
         throw error;
     }
