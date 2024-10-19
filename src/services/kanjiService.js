@@ -1,6 +1,8 @@
 import BadRequestError from "../errors/BadRequestError.js";
 import NotFoundError from "../errors/NotFoundError.js";
 import Kanji from "../models/Kanji.js";
+import Word from "../models/Word.js";
+import { isKanji } from "../utils/isKanji.js";
 const getAllKanjis = async () => {
     try {
         const kanjis = await Kanji.find().populate('composition');
@@ -54,10 +56,14 @@ const getKanjiById = async (data) => {
             throw new BadRequestError("Bad Request!");
         }
 
-        const result = await Kanji.findById(id).populate("composition");
+        const result = await Kanji.findById(id).populate("composition").lean();
+        const relatedWord = await searchWordByKanji(result.text);
 
         if (result) {
-            return result;
+            return {
+                ...result, 
+                relatedWord: relatedWord
+            };
         } else {
             throw new NotFoundError("Không tìm thấy kanji!");
         }
@@ -83,11 +89,6 @@ const getKanjiByText = async (data) => {
     } catch (error) {
         throw error;
     }
-};
-
-const isKanji = (char) => {
-    const code = char.charCodeAt(0);
-    return (code >= 0x4E00 && code <= 0x9FBF); // Phạm vi Unicode cho Kanji
 };
 
 const searchKanji = async (data) => {
@@ -173,6 +174,17 @@ const searchKanji = async (data) => {
         throw error;
     }
 };
+
+const searchWordByKanji = async (text) =>{
+    try{
+        const limit = 4;
+        const query = { text: { $regex: `${text}`, $options: 'i' } }
+        const result = await Word.find(query).limit(4);
+        return result;
+    }catch(error){
+        throw error;
+    }
+};  
 
 export const kanjiService = {
     getAllKanjis,
