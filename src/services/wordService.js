@@ -83,7 +83,12 @@ const searchWord = async (data) => {
             results = [...results, ...suffixResults];
         }
 
-        const formattedResults = results.map(word => ({
+        const uniqueResults = {};
+        results.forEach(kanji => {
+            uniqueResults[kanji._id] = kanji; 
+        });
+
+        const formattedResults = Object.values(uniqueResults).map(word => ({
             _id: word._id,
             text: word.text,
             hiragana: word.hiragana[0],
