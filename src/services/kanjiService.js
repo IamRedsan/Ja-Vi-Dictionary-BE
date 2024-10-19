@@ -29,7 +29,7 @@ const getKanjiByJLPTLevel = async (data) => {
         const formattedResults = results.map(kanji => ({
             _id: kanji._id,
             text: kanji.text,
-            phonetic: kanji.phonetic[0]
+            phonetic: kanji.phonetic
         }));
 
         if (formattedResults.length > 0) {
@@ -158,7 +158,7 @@ const searchKanji = async (data) => {
         const formattedResults = Object.values(uniqueResults).map(kanji => ({
             _id: kanji._id,
             text: kanji.text,
-            phonetic: kanji.phonetic[0],
+            phonetic: kanji.phonetic,
             onyomi: kanji.onyomi,
             kunyomi: kanji.kunyomi
         }));
