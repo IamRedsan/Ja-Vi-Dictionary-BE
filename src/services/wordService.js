@@ -31,13 +31,13 @@ const getWordById = async (data) => {
                 if (kanjiData && kanjiData.length > 0) {
                     return kanjiData;
                 } else {
-                    return kanjiChar; 
+                    return; 
                 }
             });
 
             const kanjiInfoArray = await Promise.all(kanjiInfoPromises);
 
-            const flattenedKanjiInfoArray = kanjiInfoArray.flat();
+            const flattenedKanjiInfoArray = kanjiInfoArray.flat().filter(item => item);
 
             result.kanji = flattenedKanjiInfoArray || {};
             return result
