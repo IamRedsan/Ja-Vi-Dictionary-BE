@@ -58,11 +58,17 @@ const getKanjiById = async (data) => {
 
         const result = await Kanji.findById(id).populate("composition").lean();
         const relatedWord = await searchWordByKanji(result.text);
+        const formattedRelatedWord = relatedWord.map((relatedChild) => ({
+            _id: relatedChild._id,
+            text: relatedChild.text,
+            hiragana: relatedChild.hiragana[0], 
+            meaning: relatedChild.meaning[0].content
+          }));
 
         if (result) {
             return {
                 ...result, 
-                relatedWord: relatedWord
+                relatedWord: formattedRelatedWord
             };
         } else {
             throw new NotFoundError("Không tìm thấy kanji!");
