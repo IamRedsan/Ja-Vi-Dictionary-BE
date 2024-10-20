@@ -16,12 +16,14 @@ import kanjiRouter from "./routes/kanjiRoutes.js";
 import wordRouter from "./routes/wordRoutes.js";
 import authRouter from "./routes/authRoutes.js";
 import userRouter from "./routes/userRoutes.js";
+import commentRouter from "./routes/commentRoutes.js";
 
 app.use("/api/v1/auth", authRouter);
 app.use("/api/v1/compositions", compositionRouter);
 app.use("/api/v1/kanjis", kanjiRouter);
 app.use("/api/v1/words", wordRouter);
 app.use("/api/v1/users", userRouter);
+app.use("/api/v1/comments", commentRouter);
 app.use(ErrorHanlder);
 
 //Connect Database

@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 import composition from "./Composition.js";
+import CommentSchema from "./CommentSchema.js";
 const { ObjectId } = mongoose.Schema.Types;
 
 
@@ -12,12 +13,12 @@ const KanjiSchema = new mongoose.Schema({
     jlpt_level: { type: Number },
     composition: [{ type: mongoose.Schema.Types.ObjectId, ref: 'compositions' }],
     meaning: { type: String },
-    romanji: [{ type: String }]
+    romanji: [{ type: String }],
+    comments: [CommentSchema]
 }, {
     collection: 'kanji'
 });
 
 const Kanji = mongoose.model("kanji", KanjiSchema);
-
 
 export default Kanji;

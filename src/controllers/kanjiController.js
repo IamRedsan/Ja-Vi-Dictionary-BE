@@ -1,7 +1,3 @@
-import BadRequestError from "../errors/BadRequestError.js";
-import InternalServerError from "../errors/InternalServerError .js";
-import NotFoundError from "../errors/NotFoundError.js";
-import Kanji from "../models/Kanji.js";
 import { StatusCodes } from "http-status-codes";
 import { kanjiService } from "../services/kanjiService.js";
 
@@ -67,10 +63,40 @@ const searchKanji = async (req, res, next) => {
     }
 };
 
+//Comments
+const kanjiComment = async (req, res, next) => {
+    try{
+        const result = await kanjiService.kanjiComment(req);
+
+        return res.status(StatusCodes.OK).json({
+            status: "success",
+            data: result
+        });
+    }catch(error){
+        next(error);
+    }
+}
+
+const getKanjiComments = async (req, res, next) => {
+    try{
+        const result = await kanjiService.getKanjiComments(req);
+        return res.status(StatusCodes.OK).json({
+            status: "success",
+            data: result
+        });
+
+    }catch(error){
+        next(error);
+    }
+};
+
+
 export const kanjiController = {
     getAllKanjis,
     getKanjiByJLPTLevel,
     getKanjiById,
     getKanjiByText,
-    searchKanji
+    searchKanji,
+    kanjiComment,
+    getKanjiComments
 }

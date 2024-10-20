@@ -3,6 +3,7 @@ import NotFoundError from "../errors/NotFoundError.js";
 import Kanji from "../models/Kanji.js";
 import Word from "../models/Word.js";
 import { isKanji } from "../utils/isKanji.js";
+import User from "../models/User.js";
 const getAllKanjis = async () => {
     try {
         const kanjis = await Kanji.find().populate('composition');
@@ -192,10 +193,63 @@ const searchWordByKanji = async (text) =>{
     }
 };  
 
+const kanjiComment = async (req) => {
+    try{
+        const {kanjiId} = req.params;
+        const { userId, content } = req.body;
+
+        const kanji = await Kanji.findById(kanjiId);
+        if(!kanji){
+            throw NotFoundError("Không tìm thấy kanji!");
+        }
+
+        const user = await User.findById(userId);
+        if(!user){
+            throw NotFoundError("Không tìm thấy người dùng!");
+        }
+
+        const newComment = {
+            user: user._id,
+            content,
+            liked_by: [],
+            crecreated_at: new Date()
+        }
+
+        if(!kanji.comments){
+            kanji.comments = [newComment];
+        }else {
+            kanji.comments.push(newComment);
+        }
+        await kanji.save();
+
+        return kanji.comments;
+
+    }catch(error){
+        next(error);
+    }
+}
+
+const getKanjiComments = async (req) => {
+    try{
+        const {kanjiId} = req.params;
+
+        const kanji = await Kanji.findById(kanjiId);
+        if(!kanji){
+            throw new NotFoundError("Không tìm thấy kanji!");
+        }
+
+        return kanji.comments || [];
+    }catch(error){
+        throw error;
+    }
+};
+
 export const kanjiService = {
     getAllKanjis,
     getKanjiByJLPTLevel,
     getKanjiById,
     getKanjiByText,
-    searchKanji
+    searchKanji,
+    kanjiComment,
+    getKanjiComments
 }

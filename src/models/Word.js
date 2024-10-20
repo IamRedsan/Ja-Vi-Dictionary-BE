@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import CommentSchema from "./CommentSchema.js";
 
 const exampleSchema = new mongoose.Schema({
     text: { type: String },
@@ -18,6 +19,7 @@ const WordSchema = new mongoose.Schema({
     examples: { type: [exampleSchema] },
     kanji: { type: [Object] },
     romanji: { type: [String] },
+    comments: [CommentSchema]
 }, {
     collection: 'word'
 });

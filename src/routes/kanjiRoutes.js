@@ -9,6 +9,8 @@ kanjiRouter.route("/").get(kanjiController.getAllKanjis);
 kanjiRouter.route("/jlpt/").get(kanjiController.getKanjiByJLPTLevel);
 kanjiRouter.route("/text/:text").get(kanjiController.getKanjiByText);
 kanjiRouter.route("/search").get(kanjiController.searchKanji);
+kanjiRouter.route("/:kanjiId/comments").get(kanjiController.getKanjiComments);
+kanjiRouter.route("/:kanjiId/comments").post(kanjiController.kanjiComment);
 kanjiRouter.route("/:id").get(kanjiController.getKanjiById);
 
 export default kanjiRouter;
