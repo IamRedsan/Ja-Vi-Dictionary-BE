@@ -171,12 +171,7 @@ const searchKanji = async (data) => {
             kunyomi: kanji.kunyomi
         }));
 
-        if (formattedResults.length > 0) {
-            return formattedResults;
-        } else {
-            throw new NotFoundError("Không tìm thấy kanji nào!");
-        }
-
+        return formattedResults;
     } catch (error) {
         throw error;
     }
@@ -186,7 +181,7 @@ const searchWordByKanji = async (text) =>{
     try{
         const limit = 4;
         const query = { text: { $regex: `${text}`, $options: 'i' } }
-        const result = await Word.find(query).limit(4);
+        const result = await Word.find(query).limit(limit);
         return result;
     }catch(error){
         throw error;

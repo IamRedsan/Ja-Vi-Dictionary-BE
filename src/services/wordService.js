@@ -95,11 +95,9 @@ const searchWord = async (data) => {
             meaning: word.meaning[0].content
         }));
 
-        if (formattedResults.length > 0) {
-            return formattedResults;
-        } else {
-            throw new NotFoundError("Không tìm thấy từ nào phù hợp.");
-        }
+        
+        return formattedResults;
+
     } catch (error) {
         throw error;
     }
