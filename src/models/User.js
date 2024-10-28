@@ -14,6 +14,7 @@ const UserSchema = new mongoose.Schema({
     fullname: { type: String , require:true },
     role: { type: String , require:true },
     verified: {type: Boolean, require: true},
+    avatar: {type: String},
     otpVerification: {type: OTPSchema},
     refreshToken: { type: String } 
 }, {

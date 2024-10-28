@@ -44,14 +44,15 @@ const signUp = async (data) => {
             email, 
             fullname,
             role: "user",
-            verified: false
+            verified: false,
+            avatar: process.env.AVT_DEFAULT
         });
 
         await newUser.save(); 
 
-        const result = await sendOTPVerificationEmail(email); // Đợi hàm gửi OTP trả về kết quả
+        const result = await sendOTPVerificationEmail(email);
         console.log(result);
-        return result; // Trả về kết quả
+        return result; 
     } catch (error) {
         throw error;
     }

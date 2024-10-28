@@ -51,31 +51,38 @@ const getKanjiByJLPTLevel = async (data) => {
 
 const getKanjiById = async (data) => {
     const { id } = data.params;
-    
+
     try {
         if (!id || id.trim() === '') {
-            throw new BadRequestError("Bad Request!");
+            throw new BadRequestError("Bad Request! ID không hợp lệ.");
         }
 
-        const result = await Kanji.findById(id).populate("composition").lean();
+        const result = await Kanji.findById(id)
+            .populate("composition")
+            .populate({
+                path: "comments.user",
+                select: 'fullname avatar' 
+            }).lean();
+
+        // Kiểm tra nếu không tìm thấy kanji
+        if (!result) {
+            throw new NotFoundError("Không tìm thấy kanji!");
+        }
+
         const relatedWord = await searchWordByKanji(result.text);
         const formattedRelatedWord = relatedWord.map((relatedChild) => ({
             _id: relatedChild._id,
             text: relatedChild.text,
-            hiragana: relatedChild.hiragana[0], 
-            meaning: relatedChild.meaning[0].content
-          }));
+            hiragana: relatedChild.hiragana[0] || '', // Thêm giá trị mặc định nếu không có hiragana
+            meaning: relatedChild.meaning[0]?.content || '' // Thêm giá trị mặc định nếu không có meaning
+        }));
 
-        if (result) {
-            return {
-                ...result, 
-                relatedWord: formattedRelatedWord
-            };
-        } else {
-            throw new NotFoundError("Không tìm thấy kanji!");
-        }
+        return {
+            ...result,
+            relatedWord: formattedRelatedWord
+        };
     } catch (error) {
-        throw error;
+        throw error; // Có thể log thêm thông tin lỗi ở đây nếu cần
     }
 };
 

@@ -25,7 +25,34 @@ const getUserById = async (req, res, next) => {
     }
 };
 
+const updateUserInfo = async (req, res, next) => {
+    try{
+        console.log()
+        const result = await UserService.updateUserInfo(req);
+        return res.status(StatusCodes.OK).json({
+            status: "success",
+            data: result
+        });
+    }catch(error){
+        next(error);
+    }
+};
+
+const updateUserAvatar = async (req, res, next) => {
+    try{
+        const result = UserService.updateUserInfo(req);
+        return res.status(StatusCodes.OK).json({
+            status: "success",
+            data: result
+        });
+    }catch(error){
+        next(error);
+    }
+};
+
 export const UserController = {
     getAllUsers,
-    getUserById
+    getUserById,
+    updateUserInfo,
+    updateUserAvatar
 };

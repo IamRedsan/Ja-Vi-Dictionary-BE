@@ -21,7 +21,10 @@ const getWordById = async (data) => {
             throw new BadRequestError("ID không hợp lệ!");
         }
         
-        const result = await Word.findById(id);
+        const result = await Word.findById(id).populate({
+            path: "comments.user",
+            select: 'fullname avatar' 
+        }).lean();
 
         if(result){
             const kanjiInfoPromises = result.kanji.map(async (kanjiChar) => {

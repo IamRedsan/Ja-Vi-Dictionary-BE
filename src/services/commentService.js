@@ -41,6 +41,8 @@ const createComment = async (req) => {
             crecreated_at: new Date()
         }
 
+        console.log(newComment);
+
         if(!textObject.comments){
             textObject.comments = [newComment];
         }else {
