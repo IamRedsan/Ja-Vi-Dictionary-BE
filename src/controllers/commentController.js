@@ -25,7 +25,33 @@ const likeComment = async(req, res, next)=>{
     }
 };
 
+const updateComment = async (req, res, next)=>{
+    try{
+        const result = await CommentService.updateComment(req);
+        return res.status(StatusCodes.OK).json({
+            status: "success",
+            data: result
+        });
+    }catch(error){
+        next(error);
+    }
+};
+
+const deleteComment = async (req, res, next)=>{
+    try{
+        const result = await CommentService.deleteComment(req);
+        return res.status(StatusCodes.OK).json({
+            status: "success",
+            data: result
+        });
+    }catch(error){
+        next(error);
+    }
+};
+
 export const CommentController = {
     createComment,
-    likeComment
+    likeComment,
+    updateComment,
+    deleteComment
 }

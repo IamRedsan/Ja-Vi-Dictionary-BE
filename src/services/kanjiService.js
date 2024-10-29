@@ -73,8 +73,8 @@ const getKanjiById = async (data) => {
         const formattedRelatedWord = relatedWord.map((relatedChild) => ({
             _id: relatedChild._id,
             text: relatedChild.text,
-            hiragana: relatedChild.hiragana[0] || '', // Thêm giá trị mặc định nếu không có hiragana
-            meaning: relatedChild.meaning[0]?.content || '' // Thêm giá trị mặc định nếu không có meaning
+            hiragana: relatedChild.hiragana[0] || '', 
+            meaning: relatedChild.meaning[0]?.content || '' 
         }));
 
         return {
@@ -82,7 +82,7 @@ const getKanjiById = async (data) => {
             relatedWord: formattedRelatedWord
         };
     } catch (error) {
-        throw error; // Có thể log thêm thông tin lỗi ở đây nếu cần
+        throw error; 
     }
 };
 

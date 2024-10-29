@@ -1,8 +1,8 @@
-import { StatusCodes } from "http-status-codes";
 import BadRequestError from "../errors/BadRequestError.js";
 import Kanji from "../models/Kanji.js";
 import Word from "../models/Word.js";
 import NotFoundError from "../errors/NotFoundError.js";
+import ForbiddenError from "../errors/ForbiddenError.js"
 import User from "../models/User.js";
 
 const createComment = async (req) => {
@@ -99,8 +99,105 @@ const likeComment = async(req)=>{
     }
 };
 
+const updateComment = async (req) => {
+    try{
+        const {wordId, kanjiId, commentId} = req.query;
+        const userId = req.userId;
+        const {content} = req.body;
+
+        if(wordId && kanjiId && commentId){
+            throw new BadRequestError("Không thể truyển cả 3 tham số vào query!");
+        }
+
+        if(!commentId){
+            throw new BadRequestError("Thiếu tham số commentId!");
+        }
+
+        if(!userId){
+            throw new ForbiddenError("Không tìm thấy người dùng!");
+        }
+
+        let textObject = {};
+        if(kanjiId){
+            textObject = await Kanji.findById(kanjiId);
+        }
+        if(wordId){
+            textObject = await Word.findById(wordId);
+        }
+        if(!textObject){
+            throw new NotFoundError("Không tìm thấy thông tin Kanji hoặc Word!");
+        }
+
+        const comment = textObject.comments.id(commentId);
+        
+        if(!comment){
+            throw new NotFoundError("Không tìm thấy bình luận!");
+        }
+
+        if (comment.user.toString() !== userId) {
+            throw new ForbiddenError("Người dùng không có quyền chỉnh sửa bình luận này!");
+        }
+
+        comment.content = content;
+        await textObject.save();
+        return comment;
+    }catch(error){
+        throw error;
+    }
+};
+
+const deleteComment = async (req) => {
+    try{
+        const userId = req.userId;
+        const {wordId, kanjiId, commentId} = req.query;
+
+        if(wordId && kanjiId && commentId){
+            throw new BadRequestError("Không thể truyển cả 3 tham số vào query!");
+        }
+
+        if(!commentId){
+            throw new BadRequestError("Thiếu tham số commentId!");
+        }
+
+        const user = User.findById(userId);
+        if(!user){
+            throw new NotFoundError("Không tìm thấy người dùng!");
+        }
+
+        let textObject = {};
+        if(kanjiId){
+            textObject = await Kanji.findById(kanjiId);
+        }
+        if(wordId){
+            textObject = await Word.findById(wordId);
+        }
+        if(!textObject){
+            throw new NotFoundError("Không tìm thấy thông tin Kanji hoặc Word!");
+        }
+
+        const commentIndex = textObject.comments.findIndex(c => c._id.toString() === commentId);
+        if (commentIndex === -1) {
+            throw new NotFoundError("Không tìm thấy bình luận!");
+        }
+
+        // Kiểm tra quyền sở hữu của người dùng
+        if (textObject.comments[commentIndex].user.toString() !== userId) {
+            throw new ForbiddenError("Người dùng không có quyền xóa bình luận này!");
+        }
+
+        // Xóa comment khỏi mảng comments
+        textObject.comments.splice(commentIndex, 1);
+        await textObject.save();
+
+        return { message: "Xóa bình luận thành công!" };
+    }catch(error){
+        throw error;
+    }
+};
 
 export const CommentService = {
     createComment,
-    likeComment
+    likeComment,
+    updateComment,
+    deleteComment
 }
