@@ -3,7 +3,7 @@ import NotFoundError from "../errors/NotFoundError.js";
 import BadRequestError from "../errors/BadRequestError.js";
 import bcrypt from "bcrypt";
 
-const getAllUsers = async (data) => {
+const getAllUsers = async (req) => {
     try{
         const users = await User.find();  
         return users;
@@ -12,12 +12,26 @@ const getAllUsers = async (data) => {
     }
 };
 
+const getUserByToken = async (req) => {
+    try{
+        const userId = req.userId;
+        const user = await User.findById(userId);
+        if(!user){
+            throw new NotFoundError("Không tìm thấy thông tin người dùng!");
+        }
+        return user;
+    }catch(error){
+        
+    }
+}
+
 const getUserById = async (data) => {
     try{
         const {id} = data.params;
         if(!id){
             throw new BadRequestError("Tham số không hợp lệ!");
         }
+
         const user = await User.findById(id);
         if(!user){
             throw new NotFoundError("Không tìm thấy thông tin người dùng!");
@@ -31,7 +45,7 @@ const getUserById = async (data) => {
 const updateUserInfo = async (req) => {
     try{
         const {id} = req.params;
-        const {username, password, fullname, email, role} = req.body;
+        const {password, fullname, email, role} = req.body;
         const avatar = req.file.path;
 
         if(!id) {
@@ -44,7 +58,6 @@ const updateUserInfo = async (req) => {
         }
 
         if (fullname) user.fullname = fullname;
-        if (username) user.username = username;
         if (email) user.email = email;
         if (role) user.role = role;
         if (avatar) user.avatar = avatar; 
@@ -60,6 +73,36 @@ const updateUserInfo = async (req) => {
     }catch(error){
         throw error;
     }
+}
+
+const updateUserProfile = async (req) => {
+    try{
+        const userId = req.userId;
+        const {password, fullname} = req.body;
+        const avatar = req.file.path;
+
+        const user = await User.findById(userId);
+        if(!user){
+            throw new NotFoundError("Không tìm thấy người dùng!");
+        }
+
+        if (fullname) user.fullname = fullname;
+        if (avatar) user.avatar = avatar; 
+
+        if (password) {
+            const saltRounds = 10;
+            const hashedPass = await bcrypt.hash(password, saltRounds); 
+            user.password = hashedPass; 
+        }
+
+        await user.save();
+        return user;
+    }catch(error){
+        throw error;
+    }
+    
+
+
 }
 
 const updateUserAvatar = async (req) => {
@@ -87,6 +130,8 @@ const updateUserAvatar = async (req) => {
 export const UserService = {
     getAllUsers,
     getUserById,
+    getUserByToken,
     updateUserInfo,
+    updateUserProfile,
     updateUserAvatar
 };

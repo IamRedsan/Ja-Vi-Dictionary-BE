@@ -4,15 +4,14 @@ import ValidationError from "../errors/ValidationError.js";
 
 const signUp = async (req, res, next)=>{
     const user = Joi.object({
-        username: Joi.string().required().min(3).max(30).trim().strict(),
-        password: Joi.string().required().min(3).max(30).trim().strict(),
         email: Joi.string().email().required(),
+        password: Joi.string().required().min(3).max(30).trim().strict(),
         fullname: Joi.string().required().trim().strict(),
     });
 
     try {
         const value = await user.validateAsync(req.body, { abortEarly: false });
-        console.log('Validated Data:', value); // Kiểm tra dữ liệu đã validate
+        console.log('Validated Data:', value); 
 
         next();
     } catch(error){

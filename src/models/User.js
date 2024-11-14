@@ -8,9 +8,8 @@ const OTPSchema = new mongoose.Schema({
 });
 
 const UserSchema = new mongoose.Schema({
-    username: {type: String, require:true},
-    password: { type: String, required: true },
     email: { type: String, require:true },
+    password: { type: String, required: true },
     fullname: { type: String , require:true },
     role: { type: String , require:true },
     verified: {type: Boolean, require: true},

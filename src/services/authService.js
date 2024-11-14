@@ -24,13 +24,9 @@ const transporter = nodemailer.createTransport({
 
 //Sign up
 const signUp = async (data) => {
-    const {username, password, email, fullname} = data.body;
+    const {email, password, fullname} = data.body;
 
     try {        
-        const usernameIsExist = await User.findOne({username});
-        if(usernameIsExist) {
-            throw new BadRequestError("Tên đăng nhập đã tồn tại, vui lòng đăng ký với tên đăng nhập khác!");
-        }
         const emailIsExist = await User.findOne({email});
         if(emailIsExist) {
             throw new BadRequestError("Email đã tồn tại, vui lòng đăng ký với email khác!");
@@ -39,9 +35,8 @@ const signUp = async (data) => {
         const saltRounds = 10;
         const hashedPass = await bcrypt.hash(password, saltRounds); 
         const newUser = new User({
-            username,
-            password: hashedPass,
             email, 
+            password: hashedPass,
             fullname,
             role: "user",
             verified: false,
@@ -99,11 +94,11 @@ const sendOTPVerificationEmail = async (email) => {
 
 export const verifyOTP = async (data) => {
     try {
-        const {id, otp} = data.body;
-        if(!id || !otp){
+        const {email, otp} = data.body;
+        if(!email || !otp){
             throw new BadRequestError("OTP không hợp lệ!");
         }
-        const user = await User.findById(id);
+        const user = await User.findOne({email});
         if(user.length <= 0){
             throw new NotFoundError("Không tìm thấy tài khoản người dùng, xin vui lòng đăng ký!");
         }
@@ -135,6 +130,12 @@ const resendOTP = async (data) => {
             throw new BadRequestError("Thông tin không hợp lệ, vui lòng thử lại!");
         }
         const user = await User.findOne({email});   
+        if(!user){
+            throw new NotFoundError("Không tìm thấy người dùng, vui lòng đăng ký!");
+        }
+        if(user.verified){
+            throw BadRequestError("Tài khoản đã được xác thực, vui lòng đăng nhập!");
+        }
         user.otpVerification = {};
         sendOTPVerificationEmail(user.email);
 
@@ -147,8 +148,12 @@ const resendOTP = async (data) => {
 
 const login = async (data) => {
     try{
-        const {username, password} = data.body;
-        const user = await User.findOne({username});
+        const {email, password} = data.body;
+        const user = await User.findOne({email});
+        if(!email || !password){
+            throw new BadRequestError("Tham số email hoặc password không hợp lệ!");
+        }
+        
         if(!user){
             throw new NotFoundError("Không tìm thấy tài khoản, vui lòng đăng ký!");
         }
