@@ -90,6 +90,14 @@ const updateUserProfile = async (req) => {
         if (avatar) user.avatar = avatar; 
 
         if (password) {
+            const {oldPassword} = req.body;
+            if(!oldPassword){
+                throw new BadRequestError("Mật khẩu cũ không hợp lệ!");
+            }
+            const checkPass = await bcrypt.compare(oldPassword, user.password);
+            if(!checkPass){
+                throw new BadRequestError("Mật khẩu cũ không chính xác!");
+            }
             const saltRounds = 10;
             const hashedPass = await bcrypt.hash(password, saltRounds); 
             user.password = hashedPass; 
