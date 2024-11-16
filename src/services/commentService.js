@@ -38,10 +38,9 @@ const createComment = async (req) => {
             user: user._id,
             content,
             liked_by: [],
-            crecreated_at: new Date()
+            created_at: new Date()
         }
 
-        console.log(newComment);
 
         if(!textObject.comments){
             textObject.comments = [newComment];
@@ -50,7 +49,7 @@ const createComment = async (req) => {
         }
         await textObject.save();
 
-        return textObject.comments;
+        return textObject.comments[textObject.comments.length - 1];
     }catch(error){
         throw error;
     }
@@ -93,7 +92,8 @@ const likeComment = async(req)=>{
         }
 
         await textObject.save();
-        return textObject.comments;
+        
+        return comment;
     }catch(error){
         throw error;
     }

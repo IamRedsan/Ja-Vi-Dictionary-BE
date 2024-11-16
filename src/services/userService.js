@@ -46,7 +46,7 @@ const updateUserInfo = async (req) => {
     try{
         const {id} = req.params;
         const {password, fullname, email, role} = req.body;
-        const avatar = req.file.path;
+        const avatar = req.file?.path;
 
         if(!id) {
             throw new BadRequestError("Tham số không hợp lệ!");
@@ -79,7 +79,7 @@ const updateUserProfile = async (req) => {
     try{
         const userId = req.userId;
         const {password, fullname} = req.body;
-        const avatar = req.file.path;
+        const avatar = req.file?.path;
 
         const user = await User.findById(userId);
         if(!user){
