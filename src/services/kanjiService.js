@@ -64,10 +64,21 @@ const getKanjiById = async (data) => {
                 select: 'fullname avatar' 
             }).lean();
 
-        // Kiểm tra nếu không tìm thấy kanji
         if (!result) {
             throw new NotFoundError("Không tìm thấy kanji!");
         }
+
+        if (result.comments && Array.isArray(result.comments)) {
+            result.comments.sort((a, b) => {
+                const likesDiff = b.liked_by.length - a.liked_by.length;
+                if (likesDiff !== 0) {
+                    return likesDiff;
+                }
+                return new Date(b.created_at) - new Date(a.created_at); 
+            });
+        }
+
+        console.log(result.comments);
 
         const relatedWord = await searchWordByKanji(result.text);
         const formattedRelatedWord = relatedWord.map((relatedChild) => ({
@@ -76,7 +87,8 @@ const getKanjiById = async (data) => {
             hiragana: relatedChild.hiragana[0] || '', 
             meaning: relatedChild.meaning[0]?.content || '' 
         }));
-
+        
+        
         return {
             ...result,
             relatedWord: formattedRelatedWord

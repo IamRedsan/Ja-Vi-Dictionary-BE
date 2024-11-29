@@ -15,7 +15,7 @@ const getAllWords = async () => {
 
 const getWordById = async (data) => {
     try {
-        const {id} = data.params;
+        const { id } = data.params;
 
         if (!id || id.trim() === '' || !mongoose.isValidObjectId(id)) {
             throw new BadRequestError("ID không hợp lệ!");
@@ -26,9 +26,18 @@ const getWordById = async (data) => {
             select: 'fullname avatar' 
         }).lean();
 
-        if(result){
+        if (result) {
+            if (result.comments && Array.isArray(result.comments)) {
+                result.comments.sort((a, b) => {
+                    const likesDiff = (b.liked_by?.length || 0) - (a.liked_by?.length || 0); 
+                    if (likesDiff !== 0) {
+                        return likesDiff; 
+                    }
+                    return new Date(b.created_at) - new Date(a.created_at); 
+                });
+            }
+
             const kanjiInfoPromises = result.kanji.map(async (kanjiChar) => {
-                // Tìm tất cả các kanji phù hợp với text của từng kanji
                 const kanjiData = await Kanji.find({ text: kanjiChar });
  
                 if (kanjiData && kanjiData.length > 0) {
@@ -39,15 +48,14 @@ const getWordById = async (data) => {
             });
 
             const kanjiInfoArray = await Promise.all(kanjiInfoPromises);
-
             const flattenedKanjiInfoArray = kanjiInfoArray.flat().filter(item => item);
 
             result.kanji = flattenedKanjiInfoArray || {};
-            return result
+            return result;
         } else {
             throw new NotFoundError("Không tìm thấy dữ liệu!");
         }   
-    } catch(error){
+    } catch (error) {
         console.log(error);
         throw error;
     }

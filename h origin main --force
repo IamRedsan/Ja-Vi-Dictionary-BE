@@ -1,0 +1,40 @@
+[33mcb469bb[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m)[m User update fix
+[33m97a1ab9[m Change password fix
+[33m387babe[m Auth update - User Profile
+[33m3ddc34e[m Update & Delete comment
+[33m41ccc8e[m Avatar - update user info
+[33mc5647b2[m kanji word service fix
+[33m809e9a8[m comment - like api
+[33me6ace32[m formate related word
+[33me37cb62[m word fix
+[33m32f5589[m word search duplicated fix
+[33mace25d2[m Kanji API -  related word response
+[33m0466660[m phonetic response fix
+[33mc59b96d[m kanji romanji fix
+[33m0a2c5e0[m search fix
+[33m51efadc[m user api - token - auth middleware
+[33m4c5aaf8[m auth service
+[33m978c9a4[m Kanji service
+[33m605b300[m Word service
+[33m0b98838[m Sign Up Validation
+[33mda3a98f[m otp - resend - verify
+[33mb07705e[m word kanji rensponse
+[33m40f354f[m verify otp
+[33m649406d[m Merge branch 'main' of github.com:IamRedsan/Ja-Vi-Dictionary-BE
+[33m0b42a7b[m fix response data
+[33mbf86eec[m fix response data
+[33m68855ab[m _id fix
+[33m4d06b29[m cors - kanjiapi fix
+[33m894e493[m word api
+[33m52fd639[m kanji routes fix
+[33m50f8ae4[m Error handler
+[33m7abad24[m searching kanji api romanji + limit
+[33m17fd80f[m paging kanji list api
+[33mfe2a870[m get kanji list by jlpt level
+[33m9c9cbe6[m get kanji api
+[33m0ac2679[m kanji searching api
+[33m83d9130[m kanji composition word controller route
+[33m2ba3892[m model kanji composition word - connectdb
+[33m44aef32[m Merge pull request #1 from IamRedsan/init
+[33mdae34f4[m[33m ([m[1;31morigin/init[m[33m, [m[1;32minit[m[33m)[m Initial commit
+[33mf10be0c[m Initial commit
