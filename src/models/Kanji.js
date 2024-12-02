@@ -1,7 +1,5 @@
 import mongoose from "mongoose";
-import composition from "./Composition.js";
 import CommentSchema from "./CommentSchema.js";
-const { ObjectId } = mongoose.Schema.Types;
 
 
 const KanjiSchema = new mongoose.Schema({
