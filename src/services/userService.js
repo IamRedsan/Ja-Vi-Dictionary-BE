@@ -21,7 +21,7 @@ const getUserByToken = async (req) => {
         }
         return user;
     }catch(error){
-        
+        throw error;
     }
 }
 
@@ -108,9 +108,6 @@ const updateUserProfile = async (req) => {
     }catch(error){
         throw error;
     }
-    
-
-
 }
 
 const updateUserAvatar = async (req) => {

@@ -1,41 +1,37 @@
 import mongoose from "mongoose";
 
 const CardSchema = new mongoose.Schema({
-    _id: {type: String, require: true},
-    createdDate: {type: Date},
-    updatedDate: {type: Date},
-    deckId: {
-        type: String,
-        require: true
-
-    },
-    word: {type: String},
-    sentence: {type: String},
-    reading: {type: String},
-    meaning: {type: String},
-    difficulty: {type: Number},
-    due: {type: Date},
-    elapsed_days: {type: Number},
-    lapses: {type: Number},
-    last_review: {type: Date},
-    reps: {type: Number},
-    scheduled_days: {type: Number},
-    stability: {type: Number},
-    state: {type: Number},
+    id: { type: Number, required: true },
+    word: { type: String, required: true },
+    sentence: { type: String, required: true },
+    reading: { type: String, required: true },
+    meaning: { type: String, required: true },
+    difficulty: { type: Number, required: true },
+    due: { type: Date, required: true },
+    elapsed_days: { type: Number, required: true },
+    lapses: { type: Number, required: true },
+    last_review: { type: Date },
+    reps: { type: Number, required: true },
+    scheduled_days: { type: Number, required: true },
+    stability: { type: Number, required: true },
+    state: { type: Number, required: true },
+    deckId: { type: String, required: true },
+    createdDate: { type: Date, required: true },
+    updatedDate: { type: Date, required: true },
     createdBy: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "User",
-        require: true
+        required: true
     },
 });
 
 CardSchema.set("toJSON", {
     transform: (doc, ret) => {
         delete ret.createdBy;
-        return ret;
+        return ret; 
     }
 });
 
-const Card = mongoose.model("card", CardSchema);
+const Card = mongoose.model("Card", CardSchema);
 
 export default Card;

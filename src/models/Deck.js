@@ -1,28 +1,29 @@
 import mongoose from "mongoose";
 
 const DeckSchema = new mongoose.Schema({
-    _id: { type: String, require: true },
-    name: { type: String, require: true },
-    createdDate: {
-        type: Date,
-        default: Date.now
+    id: { type: Number, require: true },
+    name: { type: String, require: true }, 
+    newCardQuantity: { type: Number, require: true },
+    createdDate: { 
+        type: String, 
+        require: true, 
+        default: () => new Date().toISOString() 
     },
     updatedDate: {
-        type: Date,
-        default: Date.now
-    },
-    newCardQuantity: {
-        type: Number
+        type: String, 
+        require: true, 
+        default: () => new Date().toISOString() 
     },
     createdBy: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "User",
         require: true
-    },
-})
+    }
+});
 
+// Middleware để cập nhật updatedDate trước khi lưu
 // DeckSchema.pre('save', function (next) {
-//     this.updated_at = Date.now();
+//     this.updatedDate = new Date().toISOString();
 //     next();
 // });
 

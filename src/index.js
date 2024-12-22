@@ -2,6 +2,7 @@ import express from "express";
 import dotenv from 'dotenv';
 import { ErrorHanlder } from "./middlewares/ErrorHandler.js";
 import cors from "cors";
+import morgan from "morgan";
 import "express-async-errors";
 
 dotenv.config();

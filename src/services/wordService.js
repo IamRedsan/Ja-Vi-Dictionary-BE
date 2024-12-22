@@ -17,7 +17,7 @@ const getWordById = async (data) => {
     try {
         const { id } = data.params;
 
-        if (!id || id.trim() === '' || !mongoose.isValidObjectId(id)) {
+        if (!id || id.trim() === '') {
             throw new BadRequestError("ID không hợp lệ!");
         }
         
@@ -25,7 +25,6 @@ const getWordById = async (data) => {
             path: "comments.user",
             select: 'fullname avatar' 
         }).lean();
-
         if (result) {
             if (result.comments && Array.isArray(result.comments)) {
                 result.comments.sort((a, b) => {
@@ -56,7 +55,6 @@ const getWordById = async (data) => {
             throw new NotFoundError("Không tìm thấy dữ liệu!");
         }   
     } catch (error) {
-        console.log(error);
         throw error;
     }
 };

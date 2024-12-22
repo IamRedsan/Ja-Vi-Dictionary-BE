@@ -32,7 +32,8 @@ const getKanjiByJLPTLevel = async (data) => {
         const formattedResults = results.map(kanji => ({
             _id: kanji._id,
             text: kanji.text,
-            phonetic: kanji.phonetic
+            phonetic: kanji.phonetic,
+            jlpt_level: level
         }));
 
         if (formattedResults.length > 0) {
@@ -77,8 +78,6 @@ const getKanjiById = async (data) => {
                 return new Date(b.created_at) - new Date(a.created_at); 
             });
         }
-
-        console.log(result.comments);
 
         const relatedWord = await searchWordByKanji(result.text);
         const formattedRelatedWord = relatedWord.map((relatedChild) => ({
@@ -214,12 +213,12 @@ const kanjiComment = async (req) => {
 
         const kanji = await Kanji.findById(kanjiId);
         if(!kanji){
-            throw NotFoundError("Không tìm thấy kanji!");
+            throw new NotFoundError("Không tìm thấy kanji!");
         }
 
         const user = await User.findById(userId);
         if(!user){
-            throw NotFoundError("Không tìm thấy người dùng!");
+            throw new NotFoundError("Không tìm thấy người dùng!");
         }
 
         const newComment = {
@@ -235,11 +234,10 @@ const kanjiComment = async (req) => {
             kanji.comments.push(newComment);
         }
         await kanji.save();
-
+        
         return kanji.comments;
-
     }catch(error){
-        next(error);
+        throw error;
     }
 }
 

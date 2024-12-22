@@ -79,7 +79,7 @@ const likeComment = async(req)=>{
             throw new NotFoundError("Không tìm thấy thông tin Kanji hoặc Word!");
         }
 
-        const comment = textObject.comments.id(commentId);
+        const comment = textObject.comments.find(c => c._id.toString() === commentId);
         if(!comment){
             throw new NotFoundError("Không tìm thấy bình luận!");
         }
@@ -128,7 +128,7 @@ const updateComment = async (req) => {
             throw new NotFoundError("Không tìm thấy thông tin Kanji hoặc Word!");
         }
 
-        const comment = textObject.comments.id(commentId);
+        const comment = textObject.comments.find(c => c._id.toString() === commentId);
         
         if(!comment){
             throw new NotFoundError("Không tìm thấy bình luận!");

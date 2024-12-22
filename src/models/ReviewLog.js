@@ -1,33 +1,65 @@
 import mongoose from "mongoose";
 
 const ReviewLogSchema = new mongoose.Schema({
-    cardId: {
-        type: String,
-        require: true
+    id: { type: Number, require: true },
+    cardId: { 
+        type: String, 
+        required: true 
     },
-    difficulty: {type: Number},
-    due: {type: Date},
-    elapsed_days: {type: Number},
-    last_elapsed_days: {type: Number},
-    rating: {type: Number},
-    review: {type: Date},
-    scheduled_days: {type: Number},
-    stability: {type: Number},
-    state: {type: Number},
+    difficulty: { 
+        type: Number, 
+        required: true 
+    },
+    due: { 
+        type: Date, 
+        required: true 
+    },
+    elapsed_days: { 
+        type: Number, 
+        required: true 
+    },
+    last_elapsed_days: { 
+        type: Number, 
+        required: true 
+    },
+    rating: { 
+        type: Number, 
+        required: true 
+    },
+    review: { 
+        type: Date, 
+        required: true 
+    },
+    scheduled_days: { 
+        type: Number, 
+        required: true 
+    },
+    stability: { 
+        type: Number, 
+        required: true 
+    },
+    state: { 
+        type: Number, 
+        required: true 
+    },
     createdBy: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "User",
-        require: true
+        required: true
     },
+    createdDate: { 
+        type: Date, 
+        required: true 
+    }
 });
 
 ReviewLogSchema.set("toJSON", {
     transform: (doc, ret) => {
         delete ret.createdBy;
-        return ret;
+        return ret; 
     }
 });
 
-const ReviewLog = mongoose.model("review-log", ReviewLogSchema);
+const ReviewLog = mongoose.model("ReviewLog", ReviewLogSchema);
 
 export default ReviewLog;
