@@ -1,9 +1,9 @@
 import { StatusCodes } from "http-status-codes";
 import { wordService } from "../services/wordService.js";
 
-const getAllWords = async (req, res) => {
+const getAllWords = async (req, res, next) => {
     try {
-        const words = await wordService.getAllWords();
+        const words = await wordService.getAllWords(req);
 
         res.status(StatusCodes.OK).send({
             status: "success",
@@ -41,8 +41,47 @@ const searchWord = async (req, res, next) => {
     } 
 };
 
+const addNewWord = async (req, res, next) => {
+    try{
+        const result = await wordService.addNewWord(req);
+        return res.status(StatusCodes.CREATED).json({
+            status: "success",
+            data: result
+        })
+    }catch(error){  
+        next(error);
+    }
+};
+
+const updateWord = async (req, res, next) => {
+    try{
+        const result = await wordService.updateWord(req);
+        return res.status(StatusCodes.OK).json({
+            status: "success",
+            data: result
+        })
+    }catch(error){  
+        next(error);
+    }
+};
+
+const deleteWord = async (req, res, next) => {
+    try{
+        const result = await wordService.deleteWord(req);
+        return res.status(StatusCodes.OK).json({
+            status: "success",
+            data: result
+        })
+    }catch(error){
+        next(error);
+    }
+}
+
 export const wordController = {
     getAllWords,
     getWordById, 
-    searchWord
+    searchWord,
+    addNewWord,
+    updateWord,
+    deleteWord
 };

@@ -103,6 +103,7 @@ const updateComment = async (req) => {
     try{
         const {wordId, kanjiId, commentId} = req.query;
         const userId = req.userId;
+        const role = req.role;
         const {content} = req.body;
 
         if(wordId && kanjiId && commentId){
@@ -114,7 +115,7 @@ const updateComment = async (req) => {
         }
 
         if(!userId){
-            throw new ForbiddenError("Không tìm thấy người dùng!");
+            throw new BadRequestError("Không tìm thấy người dùng!");
         }
 
         let textObject = {};
@@ -134,7 +135,7 @@ const updateComment = async (req) => {
             throw new NotFoundError("Không tìm thấy bình luận!");
         }
 
-        if (comment.user.toString() !== userId) {
+        if (comment.user.toString() !== userId && role == "user") {
             throw new ForbiddenError("Người dùng không có quyền chỉnh sửa bình luận này!");
         }
 
@@ -181,7 +182,7 @@ const deleteComment = async (req) => {
         }
 
         // Kiểm tra quyền sở hữu của người dùng
-        if (textObject.comments[commentIndex].user.toString() !== userId) {
+        if (textObject.comments[commentIndex].user.toString() !== userId || user.role == "user") {
             throw new ForbiddenError("Người dùng không có quyền xóa bình luận này!");
         }
 

@@ -4,7 +4,7 @@ import { kanjiService } from "../services/kanjiService.js";
 //Get /api/v1/kanjis
 const getAllKanjis = async (req, res, next) => {
     try {
-        const kanjis = await kanjiService.getAllKanjis();
+        const kanjis = await kanjiService.getAllKanjis(req);
         res.status(StatusCodes.OK).send({
             status: "success",
             data: kanjis
@@ -90,6 +90,44 @@ const getKanjiComments = async (req, res, next) => {
     }
 };
 
+const addNewKanji = async (req, res, next) => {
+    try{
+        const result = await kanjiService.addNewKanji(req);
+        return res.status(StatusCodes.CREATED).json({
+            status: "success",
+            data: result
+        });
+    }catch(error){
+        next(error);
+    }
+
+};
+
+const updateKanji = async (req, res, next) => {
+    try{
+        const result = await kanjiService.updateKanji(req);
+        return res.status(StatusCodes.OK).json({
+            status: "success",
+            data: result
+        });
+    }catch(error){
+        next(error);
+    }
+
+};
+
+const deleteKanji = async (req, res, next) => {
+    try{
+        const result = await kanjiService.deleteKanji(req);
+        return res.status(StatusCodes.OK).json({
+            status: "success",
+            data: result
+        });
+    }catch(error){
+        next(error);
+    }
+};
+
 
 export const kanjiController = {
     getAllKanjis,
@@ -98,5 +136,8 @@ export const kanjiController = {
     getKanjiByText,
     searchKanji,
     kanjiComment,
-    getKanjiComments
+    getKanjiComments,
+    addNewKanji,
+    updateKanji,
+    deleteKanji
 }

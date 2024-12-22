@@ -15,9 +15,11 @@ const UserSchema = new mongoose.Schema({
     verified: {type: Boolean, require: true},
     avatar: {type: String},
     otpVerification: {type: OTPSchema},
-    refreshToken: { type: String } 
+    refreshToken: { type: String } ,
+    isBanned: {type: Boolean}
 }, {
-    collection: 'user'
+    collection: 'user',
+    timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' }
 });
 
 const User = mongoose.model("user", UserSchema);

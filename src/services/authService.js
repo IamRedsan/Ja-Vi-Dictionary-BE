@@ -165,6 +165,10 @@ const login = async (data) => {
             throw new ForbiddenError("Tài khoản chưa được xác thực, vui lòng xác thực để đăng nhập!");
         }
 
+        if(user.isBanned){
+            throw new ForbiddenError("Tài khoản của bạn đã bị cấm!");
+        }
+
         const payload = {
             id: user._id.toString(),
             role: user.role

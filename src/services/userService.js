@@ -4,13 +4,44 @@ import BadRequestError from "../errors/BadRequestError.js";
 import bcrypt from "bcrypt";
 
 const getAllUsers = async (req) => {
-    try{
-        const users = await User.find();  
-        return users;
-    } catch(error){
+    const page = parseInt(req.query.page);
+    const limit = parseInt(req.query.limit);
+
+    try {
+        if (!page || !limit) {
+            const results = await User.find();
+            return {
+                totalPages: 1,
+                currentPage: 1,
+                data: results,
+            };
+        }
+
+        const total = await User.countDocuments();
+        const totalPages = Math.ceil(total / limit);
+
+        if (page > totalPages) {
+            throw new NotFoundError("Không có dữ liệu!");
+        }
+
+        const results = await User.find()
+            .skip((page - 1) * limit)
+            .limit(limit);
+
+        if (results.length > 0) {
+            return {
+                totalPages,
+                currentPage: page,
+                data: results,
+            };
+        } else {
+            throw new NotFoundError("Không tìm thấy người dùng!");
+        }
+    } catch (error) {
         throw error;
     }
 };
+
 
 const getUserByToken = async (req) => {
     try{
