@@ -4,10 +4,42 @@ import Kanji from "../models/Kanji.js";
 import Word from "../models/Word.js";
 import { isKanji } from "../utils/isKanji.js";
 import User from "../models/User.js";
-const getAllKanjis = async () => {
+import toRomaji from "../utils/toRomaji.js";
+
+const getAllKanjis = async (data) => {
+    const page = parseInt(data.query.page);
+    const limit = parseInt(data.query.limit);
+
     try {
-        const kanjis = await Kanji.find().populate('composition');
-        return kanjis;
+        if (!page || !limit) {
+            const results = await Kanji.find().populate('composition');
+            return {
+                totalPages: 1,
+                currentPage: 1,
+                data: results
+            };
+        }
+
+        const total = await Kanji.countDocuments();
+        const totalPages = Math.ceil(total / limit);
+
+        if (page > totalPages) {
+            throw new NotFoundError("Không có dữ liệu!");
+        }
+
+        const results = await Kanji.find().populate('composition')
+            .skip((page - 1) * limit)
+            .limit(limit);
+
+        if (results.length > 0) {
+            return {
+                totalPages,
+                currentPage: page,
+                data: results
+            };
+        } else {
+            throw new NotFoundError("Không tìm thấy Kanji!");
+        }
     } catch (error) {
         throw error;
     }
@@ -32,7 +64,8 @@ const getKanjiByJLPTLevel = async (data) => {
         const formattedResults = results.map(kanji => ({
             _id: kanji._id,
             text: kanji.text,
-            phonetic: kanji.phonetic
+            phonetic: kanji.phonetic,
+            jlpt_level: level
         }));
 
         if (formattedResults.length > 0) {
@@ -64,9 +97,18 @@ const getKanjiById = async (data) => {
                 select: 'fullname avatar' 
             }).lean();
 
-        // Kiểm tra nếu không tìm thấy kanji
         if (!result) {
             throw new NotFoundError("Không tìm thấy kanji!");
+        }
+
+        if (result.comments && Array.isArray(result.comments)) {
+            result.comments.sort((a, b) => {
+                const likesDiff = b.liked_by.length - a.liked_by.length;
+                if (likesDiff !== 0) {
+                    return likesDiff;
+                }
+                return new Date(b.created_at) - new Date(a.created_at); 
+            });
         }
 
         const relatedWord = await searchWordByKanji(result.text);
@@ -76,7 +118,8 @@ const getKanjiById = async (data) => {
             hiragana: relatedChild.hiragana[0] || '', 
             meaning: relatedChild.meaning[0]?.content || '' 
         }));
-
+        
+        
         return {
             ...result,
             relatedWord: formattedRelatedWord
@@ -202,12 +245,12 @@ const kanjiComment = async (req) => {
 
         const kanji = await Kanji.findById(kanjiId);
         if(!kanji){
-            throw NotFoundError("Không tìm thấy kanji!");
+            throw new NotFoundError("Không tìm thấy kanji!");
         }
 
         const user = await User.findById(userId);
         if(!user){
-            throw NotFoundError("Không tìm thấy người dùng!");
+            throw new NotFoundError("Không tìm thấy người dùng!");
         }
 
         const newComment = {
@@ -223,11 +266,10 @@ const kanjiComment = async (req) => {
             kanji.comments.push(newComment);
         }
         await kanji.save();
-
+        
         return kanji.comments;
-
     }catch(error){
-        next(error);
+        throw error;
     }
 }
 
@@ -246,6 +288,110 @@ const getKanjiComments = async (req) => {
     }
 };
 
+const addNewKanji = async (req) => {
+    try{
+        const {text, phonetic, onyomi, kunyomi, stroke, jlpt_level, composition, meaning} = req.body;
+        if(!text || !phonetic || !onyomi || !kunyomi || !stroke){
+            throw new BadRequestError("Thiếu thông tin cần thiết để thêm kanji mới!");
+        }
+
+        const existingKanji = await Kanji.findOne({text});
+        if(existingKanji) {
+            throw new BadRequestError("Kanji đã tồn tại!");
+        }
+
+        const romanjiOnyomi = onyomi.map(onyomiReading => toRomaji(onyomiReading));
+        const romanjiKunyomi = kunyomi.map(kunyomiReading => toRomaji(kunyomiReading));
+        const romanji = [...romanjiOnyomi, ...romanjiKunyomi];
+
+        const newKanji = new Kanji({
+            text, 
+            phonetic,
+            onyomi, 
+            kunyomi,
+            jlpt_level,
+            composition,
+            meaning,
+            romanji
+        });
+
+        const savedKanji = await newKanji.save();
+        return savedKanji.populate("composition");
+    }catch(error){
+        throw error;
+    }
+}
+
+const updateKanji = async (req) => {
+    try {
+        const { id } = req.params; // Lấy ID từ URL
+        const { text, phonetic, onyomi, kunyomi, stroke, jlpt_level, composition, meaning } = req.body;
+
+        // Kiểm tra ID
+        if (!id) {
+            throw new BadRequestError("Thiếu ID kanji cần cập nhật.");
+        }
+
+        // Tìm kanji cần cập nhật
+        const existingKanji = await Kanji.findById(id);
+        if (!existingKanji) {
+            throw new NotFoundError("Không tìm thấy kanji cần cập nhật.");
+        }
+
+        // Cập nhật các trường cần thiết
+        existingKanji.text = text || existingKanji.text;
+        existingKanji.phonetic = phonetic || existingKanji.phonetic;
+        existingKanji.stroke = stroke || existingKanji.stroke;
+        existingKanji.jlpt_level = jlpt_level || existingKanji.jlpt_level;
+        existingKanji.composition = composition || existingKanji.composition;
+        existingKanji.meaning = meaning || existingKanji.meaning;
+
+        // Cập nhật onyomi và kunyomi nếu có
+        if (onyomi) {
+            existingKanji.onyomi = onyomi;
+        }
+        if (kunyomi) {
+            existingKanji.kunyomi = kunyomi;
+        }
+
+        // Cập nhật romanji
+        const romanjiOnyomi = existingKanji.onyomi.map(onyomiReading => toRomaji(onyomiReading));
+        const romanjiKunyomi = existingKanji.kunyomi.map(kunyomiReading => toRomaji(kunyomiReading));
+        existingKanji.romanji = [...romanjiOnyomi, ...romanjiKunyomi];
+
+        // Lưu lại thay đổi
+        const updatedKanji = await existingKanji.save();
+        return updatedKanji.populate('composition');
+    } catch (error) {
+        throw error;
+    }
+};
+
+const deleteKanji = async (req) => {
+    try {
+        const { id } = req.params; // Lấy ID từ URL
+
+        // Kiểm tra ID
+        if (!id) {
+            throw new BadRequestError("Thiếu ID kanji cần xóa.");
+        }
+
+        // Tìm kanji cần xóa
+        const existingKanji = await Kanji.findById(id);
+        if (!existingKanji) {
+            throw new NotFoundError("Không tìm thấy kanji cần xóa.");
+        }
+
+        // Xóa kanji khỏi cơ sở dữ liệu
+        await Kanji.findByIdAndDelete(id);
+
+        return { message: "Kanji đã được xóa thành công." };
+    } catch (error) {
+        throw error;
+    }
+};
+
+
 export const kanjiService = {
     getAllKanjis,
     getKanjiByJLPTLevel,
@@ -253,5 +399,8 @@ export const kanjiService = {
     getKanjiByText,
     searchKanji,
     kanjiComment,
-    getKanjiComments
+    getKanjiComments,
+    addNewKanji,
+    updateKanji,
+    deleteKanji
 }

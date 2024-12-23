@@ -18,6 +18,8 @@ import wordRouter from "./routes/wordRoutes.js";
 import authRouter from "./routes/authRoutes.js";
 import userRouter from "./routes/userRoutes.js";
 import commentRouter from "./routes/commentRoutes.js";
+import ankiRouter from "./routes/ankiRoutes.js";
+import dashboardRouter from "./routes/dashboardRoutes.js";
 
 app.use("/api/v1/auth", authRouter);
 app.use("/api/v1/compositions", compositionRouter);
@@ -25,6 +27,8 @@ app.use("/api/v1/kanjis", kanjiRouter);
 app.use("/api/v1/words", wordRouter);
 app.use("/api/v1/users", userRouter);
 app.use("/api/v1/comments", commentRouter);
+app.use("/api/v1/anki", ankiRouter);
+app.use("/api/v1/dashboard", dashboardRouter);
 app.use(ErrorHanlder);
 
 // Connect Database

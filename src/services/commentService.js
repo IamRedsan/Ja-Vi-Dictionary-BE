@@ -38,10 +38,9 @@ const createComment = async (req) => {
             user: user._id,
             content,
             liked_by: [],
-            crecreated_at: new Date()
+            created_at: new Date()
         }
 
-        console.log(newComment);
 
         if(!textObject.comments){
             textObject.comments = [newComment];
@@ -50,7 +49,7 @@ const createComment = async (req) => {
         }
         await textObject.save();
 
-        return textObject.comments;
+        return textObject.comments[textObject.comments.length - 1];
     }catch(error){
         throw error;
     }
@@ -80,7 +79,7 @@ const likeComment = async(req)=>{
             throw new NotFoundError("Không tìm thấy thông tin Kanji hoặc Word!");
         }
 
-        const comment = textObject.comments.id(commentId);
+        const comment = textObject.comments.find(c => c._id.toString() === commentId);
         if(!comment){
             throw new NotFoundError("Không tìm thấy bình luận!");
         }
@@ -93,7 +92,8 @@ const likeComment = async(req)=>{
         }
 
         await textObject.save();
-        return textObject.comments;
+        
+        return comment;
     }catch(error){
         throw error;
     }
@@ -103,6 +103,7 @@ const updateComment = async (req) => {
     try{
         const {wordId, kanjiId, commentId} = req.query;
         const userId = req.userId;
+        const role = req.role;
         const {content} = req.body;
 
         if(wordId && kanjiId && commentId){
@@ -114,7 +115,7 @@ const updateComment = async (req) => {
         }
 
         if(!userId){
-            throw new ForbiddenError("Không tìm thấy người dùng!");
+            throw new BadRequestError("Không tìm thấy người dùng!");
         }
 
         let textObject = {};
@@ -128,13 +129,13 @@ const updateComment = async (req) => {
             throw new NotFoundError("Không tìm thấy thông tin Kanji hoặc Word!");
         }
 
-        const comment = textObject.comments.id(commentId);
+        const comment = textObject.comments.find(c => c._id.toString() === commentId);
         
         if(!comment){
             throw new NotFoundError("Không tìm thấy bình luận!");
         }
 
-        if (comment.user.toString() !== userId) {
+        if (comment.user.toString() !== userId && role == "user") {
             throw new ForbiddenError("Người dùng không có quyền chỉnh sửa bình luận này!");
         }
 
@@ -181,7 +182,7 @@ const deleteComment = async (req) => {
         }
 
         // Kiểm tra quyền sở hữu của người dùng
-        if (textObject.comments[commentIndex].user.toString() !== userId) {
+        if (textObject.comments[commentIndex].user.toString() !== userId || user.role == "user") {
             throw new ForbiddenError("Người dùng không có quyền xóa bình luận này!");
         }
 

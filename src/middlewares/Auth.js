@@ -11,6 +11,7 @@ const UserAuth = async (req, res, next) => {
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
         console.log(decoded);
         req.userId = decoded.id;
+        req.role = decoded.role;
         next();
     } catch (error) {
         if (error.name === 'TokenExpiredError') {
@@ -36,6 +37,8 @@ const AdminAuth = async (req, res, next) => {
             throw new UnauthorizedError("Không có quyền truy cập!");
         }
         req.userId = decoded.id;
+        req.role = decoded.role;
+
         next();
     } catch (error) {
         if (error.name === 'TokenExpiredError') {
