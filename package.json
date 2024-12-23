@@ -23,6 +23,7 @@
     "ja-vi-dictionary-be": "file:",
     "joi": "^17.13.3",
     "jsonwebtoken": "^9.0.2",
+    "kanji": "^0.19.3",
     "mocha": "^11.0.1",
     "mongoose": "^8.7.0",
     "multer": "^1.4.5-lts.1",
