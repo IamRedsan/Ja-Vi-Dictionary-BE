@@ -21,7 +21,7 @@ const getAllUsers = async (req) => {
         const totalPages = Math.ceil(total / limit);
 
         if (page > totalPages) {
-            throw new NotFoundError("Không có dữ liệu!");
+            page = totalPages;
         }
 
         const results = await User.find({ role: "user" }) // Lọc theo role = "user"

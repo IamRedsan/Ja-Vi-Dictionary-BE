@@ -23,7 +23,7 @@ const getAllWords = async (data) => {
         const totalPages = Math.ceil(total / limit);
 
         if (page > totalPages) {
-            throw new NotFoundError("Không có dữ liệu!");
+            page = totalPages;
         }
 
         const results = await Word.find()

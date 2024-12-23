@@ -26,7 +26,7 @@ const getAllKanjis = async (data) => {
         const totalPages = Math.ceil(total / limit);
 
         if (page > totalPages) {
-            throw new NotFoundError("Không có dữ liệu!");
+            page = totalPages;
         }
 
         const results = await Kanji.find().populate('composition')
@@ -57,7 +57,7 @@ const getKanjiByJLPTLevel = async (data) => {
         const totalPages = Math.ceil(total / limit);
 
         if (page > totalPages) {
-            throw new NotFoundError("Không có dữ liệu!");
+            page = totalPages;
         }
 
         const results = await Kanji.find({ jlpt_level: level }, { text: 1, phonetic: 1 }).

@@ -24,7 +24,7 @@ const getAllCompositions = async (data) => {
 
         // Kiểm tra nếu page lớn hơn totalPages
         if (page > totalPages) {
-            throw new NotFoundError("Không có dữ liệu!");
+            page = totalPages;
         }
 
         // Lấy compositions với phân trang
