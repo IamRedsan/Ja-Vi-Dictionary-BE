@@ -73,11 +73,24 @@ const updateUserAvatar = async (req, res, next) => {
     }
 };
 
+const banUser = async (req, res, next) => {
+    try{
+        const result = await UserService.banUser(req);
+        return res.status(StatusCodes.OK).json({
+            status: "success",
+            data: result
+        });
+    }catch(error){
+        next(error);
+    }
+};
+
 export const UserController = {
     getAllUsers,
     getUserById,
     getUserByToken,
     updateUserInfo,
     updateUserProfile,
-    updateUserAvatar
+    updateUserAvatar,
+    banUser
 };

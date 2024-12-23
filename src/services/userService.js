@@ -163,11 +163,37 @@ const updateUserAvatar = async (req) => {
     }
 };
 
+const banUser = async (req) => {
+    try{
+        const {userId} = req.params;
+        if(!userId){
+            throw BadRequestError("Thiếu userId!");
+        }
+
+        const user = await User.findById(userId);
+        if(!user){
+            throw NotFoundError("Không tìm thấy người dùng!");
+        }
+        
+        if(!user.isBanned){
+            user.isBanned = true;
+        }else{
+            user.isBanned = false;
+        }
+
+        const savedUser = await user.save();
+        return savedUser;
+    }catch(error){
+        throw error;
+    }
+};
+
 export const UserService = {
     getAllUsers,
     getUserById,
     getUserByToken,
     updateUserInfo,
     updateUserProfile,
-    updateUserAvatar
+    updateUserAvatar,
+    banUser
 };

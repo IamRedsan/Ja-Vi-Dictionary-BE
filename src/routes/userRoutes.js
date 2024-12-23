@@ -9,6 +9,7 @@ const router = express.Router();
 router.route("/").get(Auth.AdminAuth, UserController.getAllUsers);
 router.route("/profile").get(Auth.UserAuth, UserController.getUserByToken);
 router.route("/profile").put(Auth.UserAuth, upload, UserController.updateUserProfile);
+router.route("/ban/:userId").put(Auth.AdminAuth, UserController.banUser);
 router.route("/:id").put(Auth.AdminAuth, upload, UserController.updateUserInfo);
 router.route("/:id").get(Auth.AdminAuth, UserController.getUserById);
 
