@@ -9,7 +9,7 @@ const getAllUsers = async (req) => {
 
     try {
         if (!page || !limit) {
-            const results = await User.find();
+            const results = await User.find({ role: "user" }); // Lọc người dùng với role = "user"
             return {
                 totalPages: 1,
                 currentPage: 1,
@@ -17,14 +17,14 @@ const getAllUsers = async (req) => {
             };
         }
 
-        const total = await User.countDocuments();
+        const total = await User.countDocuments({ role: "user" }); // Đếm tổng số người dùng có role = "user"
         const totalPages = Math.ceil(total / limit);
 
         if (page > totalPages) {
-            throw new NotFoundError("Không có dữ liệu!");
+            page = totalPages;
         }
 
-        const results = await User.find()
+        const results = await User.find({ role: "user" }) // Lọc theo role = "user"
             .skip((page - 1) * limit)
             .limit(limit);
 
@@ -41,7 +41,6 @@ const getAllUsers = async (req) => {
         throw error;
     }
 };
-
 
 const getUserByToken = async (req) => {
     try{

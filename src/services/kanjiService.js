@@ -4,7 +4,9 @@ import Kanji from "../models/Kanji.js";
 import Word from "../models/Word.js";
 import { isKanji } from "../utils/isKanji.js";
 import User from "../models/User.js";
+import kanji from "kanji";
 import toRomaji from "../utils/toRomaji.js";
+import Composition from "../models/Composition.js";
 
 const getAllKanjis = async (data) => {
     const page = parseInt(data.query.page);
@@ -24,7 +26,7 @@ const getAllKanjis = async (data) => {
         const totalPages = Math.ceil(total / limit);
 
         if (page > totalPages) {
-            throw new NotFoundError("Không có dữ liệu!");
+            page = totalPages;
         }
 
         const results = await Kanji.find().populate('composition')
@@ -55,7 +57,7 @@ const getKanjiByJLPTLevel = async (data) => {
         const totalPages = Math.ceil(total / limit);
 
         if (page > totalPages) {
-            throw new NotFoundError("Không có dữ liệu!");
+            page = totalPages;
         }
 
         const results = await Kanji.find({ jlpt_level: level }, { text: 1, phonetic: 1 }).
@@ -289,43 +291,71 @@ const getKanjiComments = async (req) => {
 };
 
 const addNewKanji = async (req) => {
-    try{
-        const {text, phonetic, onyomi, kunyomi, stroke, jlpt_level, composition, meaning} = req.body;
-        if(!text || !phonetic || !onyomi || !kunyomi || !stroke){
-            throw new BadRequestError("Thiếu thông tin cần thiết để thêm kanji mới!");
+    try {
+        const { text, phonetic, onyomi, kunyomi, stroke, jlpt_level, meaning } = req.body;
+
+        if (!text || !phonetic || !onyomi || !kunyomi || !stroke) {
+            throw new BadRequestError("Thiếu thông tin cần thiết để thêm Kanji mới!");
         }
 
-        const existingKanji = await Kanji.findOne({text});
-        if(existingKanji) {
+        const existingKanji = await Kanji.findOne({ text });
+        if (existingKanji) {
             throw new BadRequestError("Kanji đã tồn tại!");
         }
 
+        // Chuyển đổi onyomi và kunyomi sang romaji
         const romanjiOnyomi = onyomi.map(onyomiReading => toRomaji(onyomiReading));
         const romanjiKunyomi = kunyomi.map(kunyomiReading => toRomaji(kunyomiReading));
         const romanji = [...romanjiOnyomi, ...romanjiKunyomi];
 
+        // Lấy cây thành phần Kanji
+        const kanjiTree = kanji.kanjiTree(text);
+
+        // Trích xuất danh sách bộ thủ
+        const extractElements = (node) => {
+            let elements = [node.element];
+            if (node.g) {
+                node.g.forEach(child => {
+                    elements = elements.concat(extractElements(child));
+                });
+            }
+            return elements;
+        };
+        const radicals = extractElements(kanjiTree);
+
+        // Tìm composition IDs
+        const composition = [];
+        for (const rawText of radicals) {
+            const comp = await Composition.findOne({ raw_text: rawText });
+            if (comp) {
+                composition.push(comp._id);
+            }
+        }
+
+        // Tạo Kanji mới
         const newKanji = new Kanji({
-            text, 
+            text,
             phonetic,
-            onyomi, 
+            onyomi,
             kunyomi,
+            stroke,
             jlpt_level,
-            composition,
             meaning,
-            romanji
+            romanji,
+            composition, 
         });
 
         const savedKanji = await newKanji.save();
         return savedKanji.populate("composition");
-    }catch(error){
+    } catch (error) {
         throw error;
     }
-}
+};
 
 const updateKanji = async (req) => {
     try {
         const { id } = req.params; // Lấy ID từ URL
-        const { text, phonetic, onyomi, kunyomi, stroke, jlpt_level, composition, meaning } = req.body;
+        const { text, phonetic, onyomi, kunyomi, stroke, jlpt_level, meaning } = req.body;
 
         // Kiểm tra ID
         if (!id) {
@@ -338,12 +368,11 @@ const updateKanji = async (req) => {
             throw new NotFoundError("Không tìm thấy kanji cần cập nhật.");
         }
 
-        // Cập nhật các trường cần thiết
+        // Cập nhật các trường cơ bản
         existingKanji.text = text || existingKanji.text;
         existingKanji.phonetic = phonetic || existingKanji.phonetic;
         existingKanji.stroke = stroke || existingKanji.stroke;
         existingKanji.jlpt_level = jlpt_level || existingKanji.jlpt_level;
-        existingKanji.composition = composition || existingKanji.composition;
         existingKanji.meaning = meaning || existingKanji.meaning;
 
         // Cập nhật onyomi và kunyomi nếu có
@@ -354,14 +383,43 @@ const updateKanji = async (req) => {
             existingKanji.kunyomi = kunyomi;
         }
 
-        // Cập nhật romanji
+        // Cập nhật romanji từ onyomi và kunyomi
         const romanjiOnyomi = existingKanji.onyomi.map(onyomiReading => toRomaji(onyomiReading));
         const romanjiKunyomi = existingKanji.kunyomi.map(kunyomiReading => toRomaji(kunyomiReading));
         existingKanji.romanji = [...romanjiOnyomi, ...romanjiKunyomi];
 
+        // Nếu text thay đổi, cập nhật lại cây Kanji và danh sách composition
+        if (text) {
+            const kanjiTree = kanji.kanjiTree(text);
+
+            // Trích xuất danh sách bộ thủ
+            const extractElements = (node) => {
+                let elements = [node.element];
+                if (node.g) {
+                    node.g.forEach(child => {
+                        elements = elements.concat(extractElements(child));
+                    });
+                }
+                return elements;
+            };
+            const radicals = extractElements(kanjiTree);
+
+            // Tìm composition IDs từ radicals
+            const composition = [];
+            for (const rawText of radicals) {
+                const comp = await Composition.findOne({ raw_text: rawText });
+                if (comp) {
+                    composition.push(comp._id);
+                }
+            }
+
+            // Cập nhật composition và radicals
+            existingKanji.composition = composition;
+        }
+
         // Lưu lại thay đổi
         const updatedKanji = await existingKanji.save();
-        return updatedKanji.populate('composition');
+        return updatedKanji.populate("composition");
     } catch (error) {
         throw error;
     }
