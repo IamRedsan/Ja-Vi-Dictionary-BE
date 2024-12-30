@@ -39,8 +39,46 @@ const getAnkiInfo = async (req, res, next) => {
     }
 };  
 
+const getActionLogs = async (req, res, next) => {
+    try{
+        const result = await ankiService.getActionLogs(req);
+        return res.status(StatusCodes.OK).json({
+            status: "success",
+            data: result
+        });
+    }catch(err){
+        next(err); 
+    }
+};
+
+const mergeFromClient = async (req, res, next) => {
+    try{
+        await ankiService.mergeFromClient(req);
+        return res.status(StatusCodes.OK).json({
+            status: "success",
+        });
+    }catch(err){
+        next(err); 
+    }
+};
+
+const fillLogs = async (req, res, next) => {
+    try{
+        const filledLogs = await ankiService.fillLogs(req);
+        return res.status(StatusCodes.OK).json({
+            status: "success",
+            data: filledLogs
+        });
+    }catch(err){
+        next(err); 
+    }
+};
+
 export const ankiController = {
     getDecks,
     updateAnki,
-    getAnkiInfo
+    getAnkiInfo,
+    getActionLogs,
+    mergeFromClient,
+    fillLogs
 } 

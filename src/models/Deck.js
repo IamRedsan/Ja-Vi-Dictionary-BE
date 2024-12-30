@@ -4,16 +4,8 @@ const DeckSchema = new mongoose.Schema({
     id: { type: Number, require: true },
     name: { type: String, require: true }, 
     newCardQuantity: { type: Number, require: true },
-    createdDate: { 
-        type: String, 
-        require: true, 
-        default: () => new Date().toISOString() 
-    },
-    updatedDate: {
-        type: String, 
-        require: true, 
-        default: () => new Date().toISOString() 
-    },
+    createdDate: { type: String, require: true }, 
+    updatedDate: { type: String, require: true }, 
     createdBy: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "User",
