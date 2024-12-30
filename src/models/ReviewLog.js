@@ -2,16 +2,12 @@ import mongoose from "mongoose";
 
 const ReviewLogSchema = new mongoose.Schema({
     id: { type: Number, require: true },
-    cardId: { 
-        type: String, 
-        required: true 
-    },
     difficulty: { 
         type: Number, 
         required: true 
     },
     due: { 
-        type: Date, 
+        type: String, 
         required: true 
     },
     elapsed_days: { 
@@ -27,7 +23,7 @@ const ReviewLogSchema = new mongoose.Schema({
         required: true 
     },
     review: { 
-        type: Date, 
+        type: String, 
         required: true 
     },
     scheduled_days: { 
@@ -42,14 +38,22 @@ const ReviewLogSchema = new mongoose.Schema({
         type: Number, 
         required: true 
     },
+    deckId: {
+        type: Number, 
+        required: true 
+    },
+    cardId: {
+        type: Number, 
+        required: true 
+    },
+    createdDate: { 
+        type: String, 
+        required: true 
+    },
     createdBy: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "User",
         required: true
-    },
-    createdDate: { 
-        type: Date, 
-        required: true 
     }
 });
 

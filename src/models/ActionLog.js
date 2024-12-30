@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 
 const ActionLogSchema = new mongoose.Schema({
     id: { 
-        type: Number, 
+        type: String, 
         required: true 
     },
     action: { 
@@ -18,7 +18,7 @@ const ActionLogSchema = new mongoose.Schema({
         required: true 
     },
     createdDate: { 
-        type: Date, 
+        type: String, 
         required: true 
     },
     createdBy: {
